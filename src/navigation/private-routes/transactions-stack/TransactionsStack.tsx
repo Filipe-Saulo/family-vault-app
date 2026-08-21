@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { TransactionFormScreen } from '@/screens/private-routes/transactions/screens/TransactionFormScreen';
 import { TransactionsScreen } from '@/screens/private-routes/transactions/screens/TransactionsScreen';
 
 import type { TransactionsStackRoutes } from './transactionsRoutes';
@@ -10,6 +11,7 @@ export function TransactionsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="transactions" component={TransactionsScreen} />
+      <Stack.Screen name="transactionForm" component={TransactionFormScreen} />
     </Stack.Navigator>
   );
 }

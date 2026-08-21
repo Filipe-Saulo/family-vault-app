@@ -9,6 +9,9 @@ const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/resetPa
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
+// For a physical device on the same Wi-Fi, swap this for the machine's LAN IP
+// (localhost from the phone would mean the phone itself) - not committed since
+// it's tied to a specific local network.
 export const api = axios.create({
   baseURL: 'http://localhost:5090/api',
   timeout: 30000,
