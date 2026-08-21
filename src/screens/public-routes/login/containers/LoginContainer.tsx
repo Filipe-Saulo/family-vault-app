@@ -14,11 +14,16 @@ export function LoginContainer() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginRequestSchema>({
     resolver: zodResolver(loginRequestSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { method: 'email', email: '', phone: '', password: '' },
   });
+
+  const onMethodChange = (method: 'email' | 'phone') => {
+    setValue('method', method);
+  };
 
   const onSubmit = handleSubmit((values) => {
     mutate(values, {
@@ -29,6 +34,13 @@ export function LoginContainer() {
   });
 
   return (
-    <LoginForm control={control} errors={errors} isSubmitting={isPending} onSubmit={onSubmit} apiError={error} />
+    <LoginForm
+      control={control}
+      errors={errors}
+      isSubmitting={isPending}
+      onSubmit={onSubmit}
+      onMethodChange={onMethodChange}
+      apiError={error}
+    />
   );
 }

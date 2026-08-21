@@ -8,8 +8,13 @@ import type { ApiResponse } from '@/types/entities/api-response';
 import type { AuthResponse } from '@/types/entities/auth';
 
 async function login(payload: LoginRequestSchema) {
+  const body =
+    payload.method === 'email'
+      ? { email: payload.email, password: payload.password }
+      : { phone: payload.phone, password: payload.password };
+
   try {
-    const { data } = await api.post<ApiResponse<AuthResponse>>('/app/login', payload);
+    const { data } = await api.post<ApiResponse<AuthResponse>>('/app/login', body);
     return data.data;
   } catch (error) {
     if (isAxiosError<ApiResponse<unknown>>(error) && error.response?.data?.message) {

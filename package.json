@@ -23,6 +23,7 @@
     "expo": "~57.0.15",
     "expo-dev-client": "~57.0.14",
     "expo-status-bar": "~57.0.1",
+    "jwt-decode": "^4.0.0",
     "nativewind": "^4.2.6",
     "react": "19.2.3",
     "react-hook-form": "^7.85.0",
