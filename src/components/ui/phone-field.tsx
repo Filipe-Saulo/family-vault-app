@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/text';
 import { COUNTRIES, DEFAULT_COUNTRY, countryCodeToFlagEmoji, type Country } from '@/lib/countries';
 import { ChevronDown } from 'lucide-react-native';
 import * as React from 'react';
-import { FlatList, Pressable, View } from 'react-native';
+import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
 
 interface PhoneFieldProps {
   value?: string;
@@ -45,6 +45,13 @@ function PhoneField({ value, onChange, onBlur, placeholder = 'Número de telefon
     );
   }, [search]);
 
+  // The dialog's overlay centers its content with no defined width/height, so
+  // percentage classNames can't resolve against anything - compute real pixel
+  // values from the screen instead.
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const dialogWidth = Math.min(screenWidth * 0.92, 480);
+  const dialogMaxHeight = screenHeight * 0.8;
+
   return (
     <>
       <View className="dark:bg-input/30 border-input bg-background flex h-10 flex-row items-center rounded-md border shadow-sm shadow-black/5 sm:h-9">
@@ -66,7 +73,7 @@ function PhoneField({ value, onChange, onBlur, placeholder = 'Número de telefon
       </View>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-h-[80%]">
+        <DialogContent style={{ width: dialogWidth, maxWidth: dialogWidth, maxHeight: dialogMaxHeight }}>
           <DialogTitle>Selecione o país</DialogTitle>
           <Input
             value={search}
@@ -77,7 +84,7 @@ function PhoneField({ value, onChange, onBlur, placeholder = 'Número de telefon
           <FlatList
             data={filteredCountries}
             keyExtractor={(country) => country.code}
-            className="max-h-96"
+            style={{ maxHeight: dialogMaxHeight - 160 }}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => handleSelectCountry(item)}
