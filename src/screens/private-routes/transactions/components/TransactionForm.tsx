@@ -17,11 +17,14 @@ import type { CreateTransactionRequestSchema } from '@/schemas/services/transact
 import type { Category } from '@/types/entities/category';
 import type { TransactionType } from '@/types/entities/transaction-type';
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
 interface TransactionFormProps {
   control: Control<CreateTransactionRequestSchema>;
   errors: FieldErrors<CreateTransactionRequestSchema>;
   onSubmit: () => void;
   isSubmitting: boolean;
+  canSubmit: boolean;
   categories: Category[];
   transactionTypeOptions: TransactionType[];
   hasCategorySelected: boolean;
@@ -34,6 +37,7 @@ export function TransactionForm({
   errors,
   onSubmit,
   isSubmitting,
+  canSubmit,
   categories,
   transactionTypeOptions,
   hasCategorySelected,
@@ -115,11 +119,15 @@ export function TransactionForm({
           name="amount"
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
-              value={value === undefined ? '' : String(value)}
-              onChangeText={(text) => onChange(text ? Number(text.replace(',', '.')) : undefined)}
+              value={value ? currencyFormatter.format(value) : ''}
+              onChangeText={(text) => {
+                const digits = text.replace(/\D/g, '');
+                const amount = digits ? Number(digits) / 100 : 0;
+                onChange(amount > 0 ? amount : undefined);
+              }}
               onBlur={onBlur}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
+              keyboardType="number-pad"
+              placeholder="R$ 0,00"
             />
           )}
         />
@@ -152,7 +160,7 @@ export function TransactionForm({
         {errors.description && <Text className="text-sm text-error">{errors.description.message}</Text>}
       </View>
 
-      <Button onPress={onSubmit} disabled={isSubmitting}>
+      <Button onPress={onSubmit} disabled={isSubmitting || !canSubmit}>
         <Text>
           {isSubmitting ? 'Salvando...' : mode === 'create' ? 'Criar transação' : 'Salvar alterações'}
         </Text>

@@ -53,6 +53,10 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
 
   const categoryId = useWatch({ control, name: 'categoryId' });
   const transactionTypeId = useWatch({ control, name: 'transactionTypeId' });
+  const amount = useWatch({ control, name: 'amount' });
+  const transactionDate = useWatch({ control, name: 'transactionDate' });
+
+  const canSubmit = Boolean(categoryId) && Boolean(transactionTypeId) && Boolean(amount) && Boolean(transactionDate);
 
   const selectedCategory = categories.find((c) => c.categoryId === categoryId);
   const selectedPurpose = categoryPurposes?.find(
@@ -109,6 +113,7 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
       errors={errors}
       onSubmit={onSubmit}
       isSubmitting={isCreating || isUpdating}
+      canSubmit={canSubmit}
       categories={categories}
       transactionTypeOptions={transactionTypeOptions}
       hasCategorySelected={Boolean(categoryId)}
