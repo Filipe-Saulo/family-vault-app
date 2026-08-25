@@ -13,6 +13,7 @@ import { useCategoryPurposes } from '@/services/category-purpose/list-category-p
 import { useCreateTransaction } from '@/services/transaction/create-transaction-service';
 import { useUpdateTransaction } from '@/services/transaction/update-transaction-service';
 import { useTransactionTypes } from '@/services/transaction-type/list-transaction-types-service';
+import { useAuthStore } from '@/store/authStore';
 import type { Transaction } from '@/types/entities/transaction';
 
 import { TransactionForm } from '../components/TransactionForm';
@@ -24,6 +25,7 @@ interface TransactionFormContainerProps {
 export function TransactionFormContainer({ transaction }: TransactionFormContainerProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
 
   const { data: categoriesResult } = useCategories({ pageSize: 100 });
   const { data: categoryPurposes } = useCategoryPurposes(true);
@@ -97,7 +99,7 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
         { onSuccess }
       );
     } else {
-      createTransaction(values, { onSuccess });
+      createTransaction({ ...values, userId: userId ?? undefined }, { onSuccess });
     }
   });
 
