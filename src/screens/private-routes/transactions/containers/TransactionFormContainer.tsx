@@ -85,6 +85,7 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
   const onSubmit = handleSubmit((values) => {
     const onSuccess = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
       navigation.goBack();
     };
 

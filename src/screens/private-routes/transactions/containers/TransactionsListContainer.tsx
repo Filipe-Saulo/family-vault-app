@@ -40,7 +40,10 @@ export function TransactionsListContainer() {
 
   const handleDelete = (transactionId: number) => {
     deleteTransaction(transactionId, {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
+      },
     });
   };
 
