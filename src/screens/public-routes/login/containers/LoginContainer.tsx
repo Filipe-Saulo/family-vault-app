@@ -18,7 +18,7 @@ export function LoginContainer() {
     formState: { errors },
   } = useForm<LoginRequestSchema>({
     resolver: zodResolver(loginRequestSchema),
-    defaultValues: { method: 'email', email: '', phone: '', password: '' },
+    defaultValues: { method: 'phone', email: '', phone: '', password: '' },
   });
 
   const onMethodChange = (method: 'email' | 'phone') => {

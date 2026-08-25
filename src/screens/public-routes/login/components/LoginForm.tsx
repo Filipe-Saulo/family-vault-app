@@ -1,9 +1,12 @@
+import { Mail, Phone } from 'lucide-react-native';
 import { Controller, useWatch, type Control, type FieldErrors } from 'react-hook-form';
 import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhoneField } from '@/components/ui/phone-field';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/react-native-reusables/utils';
 import type { LoginRequestSchema } from '@/schemas/services/account/login-request-schema';
@@ -34,15 +37,17 @@ export function LoginForm({
       <View className="flex-row gap-2">
         <Button
           className={cn('flex-1')}
-          variant={method === 'email' ? 'default' : 'outline'}
-          onPress={() => onMethodChange('email')}>
-          <Text>E-mail</Text>
+          variant={method === 'phone' ? 'default' : 'outline'}
+          onPress={() => onMethodChange('phone')}>
+          <Icon as={Phone} />
+          <Text>Telefone</Text>
         </Button>
         <Button
           className={cn('flex-1')}
-          variant={method === 'phone' ? 'default' : 'outline'}
-          onPress={() => onMethodChange('phone')}>
-          <Text>Telefone</Text>
+          variant={method === 'email' ? 'default' : 'outline'}
+          onPress={() => onMethodChange('email')}>
+          <Icon as={Mail} />
+          <Text>E-mail</Text>
         </Button>
       </View>
 
@@ -72,14 +77,7 @@ export function LoginForm({
             control={control}
             name="phone"
             render={({ field: { value, onChange, onBlur } }) => (
-              <Input
-                placeholder="11987654321"
-                autoCapitalize="none"
-                keyboardType="phone-pad"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
+              <PhoneField value={value} onChange={onChange} onBlur={onBlur} placeholder="11987654321" />
             )}
           />
           {errors.phone && <Text className="text-sm text-error">{errors.phone.message}</Text>}
