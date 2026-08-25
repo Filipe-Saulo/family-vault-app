@@ -64,13 +64,17 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
     : (transactionTypes ?? []);
 
   useEffect(() => {
-    if (!transactionTypeId) return;
     const stillValid = transactionTypeOptions.some((t) => t.transactionTypeId === transactionTypeId);
-    if (!stillValid) {
+    if (transactionTypeId && !stillValid) {
       setValue('transactionTypeId', undefined as never);
     }
+    // Auto-fill when the category leaves exactly one valid type - the user only
+    // has to pick manually when the purpose is genuinely ambiguous.
+    if (transactionTypeOptions.length === 1 && transactionTypeOptions[0].transactionTypeId !== transactionTypeId) {
+      setValue('transactionTypeId', transactionTypeOptions[0].transactionTypeId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId]);
+  }, [categoryId, transactionTypes]);
 
   const onSubmit = handleSubmit((values) => {
     const onSuccess = () => {
@@ -105,6 +109,7 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
       isSubmitting={isCreating || isUpdating}
       categories={categories}
       transactionTypeOptions={transactionTypeOptions}
+      hasCategorySelected={Boolean(categoryId)}
       mode={transaction ? 'edit' : 'create'}
       apiError={createError ?? updateError}
     />

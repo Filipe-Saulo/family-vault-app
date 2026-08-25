@@ -2,6 +2,7 @@ import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
+import { DateField } from '@/components/ui/date-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,6 +24,7 @@ interface TransactionFormProps {
   isSubmitting: boolean;
   categories: Category[];
   transactionTypeOptions: TransactionType[];
+  hasCategorySelected: boolean;
   mode: 'create' | 'edit';
   apiError?: Error | null;
 }
@@ -34,56 +36,13 @@ export function TransactionForm({
   isSubmitting,
   categories,
   transactionTypeOptions,
+  hasCategorySelected,
   mode,
   apiError,
 }: TransactionFormProps) {
   return (
     <View className="gap-4">
       {apiError && <Text className="text-center text-sm text-error">{apiError.message}</Text>}
-
-      <View className="gap-1.5">
-        <Label>Descrição</Label>
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input value={value} onChangeText={onChange} onBlur={onBlur} placeholder="Ex: Compras do mês" />
-          )}
-        />
-        {errors.description && <Text className="text-sm text-error">{errors.description.message}</Text>}
-      </View>
-
-      <View className="gap-1.5">
-        <Label>Valor</Label>
-        <Controller
-          control={control}
-          name="amount"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input
-              value={value === undefined ? '' : String(value)}
-              onChangeText={(text) => onChange(text ? Number(text.replace(',', '.')) : undefined)}
-              onBlur={onBlur}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
-            />
-          )}
-        />
-        {errors.amount && <Text className="text-sm text-error">{errors.amount.message}</Text>}
-      </View>
-
-      <View className="gap-1.5">
-        <Label>Data</Label>
-        <Controller
-          control={control}
-          name="transactionDate"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input value={value} onChangeText={onChange} onBlur={onBlur} placeholder="AAAA-MM-DD" />
-          )}
-        />
-        {errors.transactionDate && (
-          <Text className="text-sm text-error">{errors.transactionDate.message}</Text>
-        )}
-      </View>
 
       <View className="gap-1.5">
         <Label>Categoria</Label>
@@ -127,7 +86,9 @@ export function TransactionForm({
                 value={selected ? { value: String(selected.transactionTypeId), label: selected.name } : undefined}
                 onValueChange={(option) => onChange(option ? Number(option.value) : undefined)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria primeiro" />
+                  <SelectValue
+                    placeholder={hasCategorySelected ? 'Selecione o tipo' : 'Selecione a categoria primeiro'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {transactionTypeOptions.map((type) => (
@@ -145,6 +106,50 @@ export function TransactionForm({
         {errors.transactionTypeId && (
           <Text className="text-sm text-error">{errors.transactionTypeId.message}</Text>
         )}
+      </View>
+
+      <View className="gap-1.5">
+        <Label>Valor</Label>
+        <Controller
+          control={control}
+          name="amount"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input
+              value={value === undefined ? '' : String(value)}
+              onChangeText={(text) => onChange(text ? Number(text.replace(',', '.')) : undefined)}
+              onBlur={onBlur}
+              keyboardType="decimal-pad"
+              placeholder="0,00"
+            />
+          )}
+        />
+        {errors.amount && <Text className="text-sm text-error">{errors.amount.message}</Text>}
+      </View>
+
+      <View className="gap-1.5">
+        <Label>Data</Label>
+        <Controller
+          control={control}
+          name="transactionDate"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <DateField value={value} onChange={onChange} onBlur={onBlur} />
+          )}
+        />
+        {errors.transactionDate && (
+          <Text className="text-sm text-error">{errors.transactionDate.message}</Text>
+        )}
+      </View>
+
+      <View className="gap-1.5">
+        <Label>Detalhes</Label>
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input value={value} onChangeText={onChange} onBlur={onBlur} placeholder="Ex: Compras do mês" />
+          )}
+        />
+        {errors.description && <Text className="text-sm text-error">{errors.description.message}</Text>}
       </View>
 
       <Button onPress={onSubmit} disabled={isSubmitting}>
