@@ -53,7 +53,7 @@ Each screen feature follows the same three-layer split: a thin `screens/` wrappe
 
 - Node.js, npm
 - [Expo CLI](https://docs.expo.dev/get-started/installation/) (`npx expo`)
-- A running instance of [`Family-Vault-Api`](https://github.com/Filipe-Saulo/Family-Vault-Api) (the mobile app expects it at a local/LAN address — see `src/api/api.ts`)
+- A running instance of [`Family-Vault-Api`](https://github.com/Filipe-Saulo/Family-Vault-Api) (the app reads its address from `EXPO_PUBLIC_API_URL` — see `.env.example`)
 - Android Studio / Xcode (or a physical device) for a native build — this project uses `expo-dev-client`, so it is **not** compatible with plain Expo Go
 
 ### Install & run
@@ -61,7 +61,8 @@ Each screen feature follows the same three-layer split: a thin `screens/` wrappe
 ```bash
 npm install
 
-# point src/api/api.ts's baseURL at your running Family-Vault-Api instance
+# point the app at your running Family-Vault-Api instance
+cp .env.example .env.local   # then edit EXPO_PUBLIC_API_URL (use the LAN IP on a physical device)
 
 npm run android   # or: npm run ios / npm run web
 ```
