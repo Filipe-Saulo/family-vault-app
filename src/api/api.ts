@@ -9,11 +9,14 @@ const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/resetPa
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
-// For a physical device on the same Wi-Fi, swap this for the machine's LAN IP
-// (localhost from the phone would mean the phone itself) - not committed since
-// it's tied to a specific local network.
+// Set EXPO_PUBLIC_API_URL in .env.local (gitignored; see .env.example). On a
+// physical device use the machine's LAN IP - localhost from the phone means the
+// phone itself. Expo inlines EXPO_PUBLIC_* at bundle time, so restart the bundler
+// after changing it.
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5090/api';
+
 export const api = axios.create({
-  baseURL: 'http://localhost:5090/api',
+  baseURL: API_URL,
   timeout: 30000,
 });
 
