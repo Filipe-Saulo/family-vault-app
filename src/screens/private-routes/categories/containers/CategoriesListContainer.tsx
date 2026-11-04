@@ -30,7 +30,8 @@ export function CategoriesListContainer() {
     reset: resetDelete,
   } = useDeleteCategory();
 
-  const canModify = hasRole(roles, 'Administrator') || hasPermission(permissions, 'ManageCategories');
+  const canManageGlobal = hasRole(roles, 'Administrator') || hasPermission(permissions, 'ManageCategories');
+  const canModify = (category: Category) => canManageGlobal || !category.isGlobal;
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
 
   const handleEdit = (category: Category) => {

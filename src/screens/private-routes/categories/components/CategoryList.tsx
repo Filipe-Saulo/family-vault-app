@@ -13,7 +13,7 @@ interface CategoryListProps {
   isLoading: boolean;
   errorMessage: string | null;
   onRetry: () => void;
-  canModify: boolean;
+  canModify: (category: Category) => boolean;
   isDeleting: boolean;
   deletingId?: number;
   deleteErrorMessage?: string;
@@ -70,12 +70,19 @@ export function CategoryList({
           <Card>
             <CardContent className="flex-row items-center justify-between gap-3">
               <View className="flex-1 gap-1">
-                <Text className="font-medium">{item.description}</Text>
+                <View className="flex-row items-center gap-2">
+                  <Text className="font-medium">{item.description}</Text>
+                  {item.isGlobal && (
+                    <View className="rounded-full bg-secondary px-2 py-0.5">
+                      <Text className="text-xs text-secondary-foreground">Global</Text>
+                    </View>
+                  )}
+                </View>
                 <Text variant="muted" className="text-xs">
                   {item.purpose.name}
                 </Text>
               </View>
-              {canModify && (
+              {canModify(item) && (
                 <View className="flex-row gap-2">
                   <Button variant="outline" size="sm" onPress={() => onEdit(item)}>
                     <Text>Editar</Text>
