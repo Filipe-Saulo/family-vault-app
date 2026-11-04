@@ -1,4 +1,4 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { AxiosError, create, isAxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 import { authStoreHelpers } from '@/store/authStore';
 import type { ApiResponse } from '@/types/entities/api-response';
@@ -15,7 +15,7 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 // after changing it.
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5090/api';
 
-export const api = axios.create({
+export const api = create({
   baseURL: API_URL,
   timeout: 30000,
 });
@@ -29,10 +29,10 @@ api.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string) => void;
   reject: (error: unknown) => void;
-}> = [];
+}[] = [];
 
 function processQueue(error: unknown, token: string | null) {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -103,9 +103,9 @@ api.interceptors.response.use(
       // Only a 4xx answer (e.g. 401) means the session is dead. Network errors, timeouts
       // and 5xx (API down, gateway during a deploy) keep the user logged in so the next
       // call can try the refresh again.
-      const status = axios.isAxiosError(refreshError) ? refreshError.response?.status : undefined;
+      const status = isAxiosError(refreshError) ? refreshError.response?.status : undefined;
       const sessionIsDead =
-        !axios.isAxiosError(refreshError) || (status !== undefined && status >= 400 && status < 500);
+        !isAxiosError(refreshError) || (status !== undefined && status >= 400 && status < 500);
       if (sessionIsDead) {
         authStoreHelpers.clearAuthData();
       }
