@@ -1,6 +1,22 @@
 # Family Vault
 
-A personal finance and transaction-tracking mobile app, built with **React Native (Expo SDK 57)** and **TypeScript**. Family Vault is the mobile client for [`Family-Vault-Api`](https://github.com/Filipe-Saulo/Family-Vault-Api), a .NET 8 backend — together they form a full-stack portfolio project covering authentication, role-based access, CRUD flows, and data visualization.
+A personal finance and transaction-tracking mobile app, built with **React Native (Expo SDK 57)** and **TypeScript**. Family Vault is the mobile client for [`Family-Vault-Api`](https://github.com/Filipe-Saulo/Family-Vault-Api), a .NET 8 backend, alongside the [`Family-Vault-Web`](https://github.com/Filipe-Saulo/Family-Vault-Web) admin panel (React) — together they form a full-stack portfolio project covering authentication, role-based access, CRUD flows, and data visualization.
+
+```mermaid
+flowchart LR
+    App["App (Expo)"] -->|"/app/*"| API["API (.NET 8)"]
+    Web["Web (React)"] -->|"/web/*"| API
+    API --> DB[("MySQL")]
+```
+
+## Highlights
+
+- **Refresh token in `expo-secure-store`** (OS Keychain/Keystore); access token in MMKV
+- **Refresh queue**: concurrent 401s wait for a single in-flight refresh and are replayed
+- **Infinite scroll** on paginated lists
+- Explicit **error states** on screens, not just empty lists
+- **Accessibility** labels and roles on the reusable components
+- **16 Jest tests** (`jest-expo`, with MMKV and SecureStore mocked)
 
 > 📱 Built as a portfolio project to demonstrate production-oriented mobile architecture: typed forms, token-refresh auth, query caching, and reusable native UI components built from scratch (no third-party UI kit beyond primitives).
 
@@ -64,7 +80,8 @@ npm install   # .npmrc sets legacy-peer-deps: jest-expo and react-native pin dif
 # point the app at your running Family-Vault-Api instance
 cp .env.example .env.local   # then edit EXPO_PUBLIC_API_URL (use the LAN IP on a physical device)
 
-npm run android   # or: npm run ios / npm run web
+# dev build (expo-dev-client; Expo Go does not work)
+npm run android   # or: npm run ios
 ```
 
 ### Other useful commands
