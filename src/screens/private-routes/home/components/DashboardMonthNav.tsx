@@ -14,11 +14,22 @@ interface DashboardMonthNavProps {
 export function DashboardMonthNav({ label, onPrevious, onNext, isNextDisabled }: DashboardMonthNavProps) {
   return (
     <View className="flex-row items-center justify-between">
-      <Button variant="ghost" size="icon" onPress={onPrevious}>
+      <Button
+        variant="ghost"
+        size="icon"
+        accessibilityRole="button"
+        accessibilityLabel="Mês anterior"
+        onPress={onPrevious}>
         <Icon as={ChevronLeft} />
       </Button>
       <Text className="text-base font-medium">{label}</Text>
-      <Button variant="ghost" size="icon" onPress={onNext} disabled={isNextDisabled}>
+      <Button
+        variant="ghost"
+        size="icon"
+        accessibilityRole="button"
+        accessibilityLabel="Próximo mês"
+        onPress={onNext}
+        disabled={isNextDisabled}>
         <Icon as={ChevronRight} />
       </Button>
     </View>

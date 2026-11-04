@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { api } from '@/api/api';
 import { toAppError } from '@/api/to-app-error';
@@ -22,10 +22,12 @@ async function listCategories(params: ListCategoriesParams) {
   }
 }
 
-export function useCategories(params: ListCategoriesParams) {
-  return useQuery({
-    queryKey: ['categories', params],
-    queryFn: () => listCategories(params),
-    placeholderData: keepPreviousData,
+export function useCategories(params: Omit<ListCategoriesParams, 'pageNumber'>) {
+  return useInfiniteQuery({
+    queryKey: ['categories', 'list', params],
+    queryFn: ({ pageParam }) => listCategories({ ...params, pageNumber: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pageNumber * lastPage.pageSize < lastPage.totalCount ? lastPage.pageNumber + 1 : undefined,
   });
 }

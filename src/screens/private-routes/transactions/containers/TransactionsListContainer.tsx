@@ -1,8 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { hasPermission, hasRole } from '@/lib/permissions';
 import type { TransactionsStackRoutes } from '@/navigation/private-routes/transactions-stack/transactionsRoutes';
 import { useDeleteTransaction } from '@/services/transaction/delete-transaction-service';
@@ -17,61 +18,95 @@ const PAGE_SIZE = 20;
 export function TransactionsListContainer() {
   const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackRoutes>>();
   const queryClient = useQueryClient();
-  const [pageNumber, setPageNumber] = useState(1);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const roles = useAuthStore((state) => state.roles);
   const permissions = useAuthStore((state) => state.permissions);
   const userId = useAuthStore((state) => state.userId);
 
-  const { data, isLoading, isError, error, refetch } = useTransactions({
-    pageNumber,
-    pageSize: PAGE_SIZE,
-    userId: userId ?? undefined,
-  });
+  const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useTransactions({
+      pageSize: PAGE_SIZE,
+      userId: userId ?? undefined,
+    });
   const {
     mutate: deleteTransaction,
     isPending: isDeleting,
-    variables: deletingId,
     error: deleteError,
     reset: resetDelete,
   } = useDeleteTransaction();
 
-  const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
+  const transactions = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
-  const canModify = (transaction: Transaction) =>
-    hasRole(roles, 'Administrator') ||
-    hasPermission(permissions, 'ManageTransactions') ||
-    transaction.userId === userId;
+  const canModify = useCallback(
+    (transaction: Transaction) =>
+      hasRole(roles, 'Administrator') ||
+      hasPermission(permissions, 'ManageTransactions') ||
+      transaction.userId === userId,
+    [roles, permissions, userId]
+  );
 
-  const handleEdit = (transaction: Transaction) => {
-    navigation.navigate('transactionForm', { transaction });
-  };
+  const handleEdit = useCallback(
+    (transaction: Transaction) => {
+      navigation.navigate('transactionForm', { transaction });
+    },
+    [navigation]
+  );
 
-  const handleDelete = (transactionId: number) => {
-    deleteTransaction(transactionId, {
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch]);
+
+  const handleDelete = () => {
+    if (!transactionToDelete) return;
+    deleteTransaction(transactionToDelete.transactionId, {
       onSuccess: () => {
+        setTransactionToDelete(null);
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
         queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
       },
     });
   };
 
+  // A failed refetch/next page keeps the loaded pages; only a failed first load blocks the list.
+  const hasData = !!data;
+
   return (
-    <TransactionList
-      transactions={data?.items ?? []}
-      isLoading={isLoading}
-      errorMessage={isError ? error.message : null}
-      onRetry={() => refetch()}
-      canModify={canModify}
-      isDeleting={isDeleting}
-      deletingId={deletingId}
-      deleteErrorMessage={deleteError?.message}
-      onDeleteDialogOpen={resetDelete}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      pageNumber={pageNumber}
-      totalPages={totalPages}
-      onPrevPage={() => setPageNumber((page) => Math.max(1, page - 1))}
-      onNextPage={() => setPageNumber((page) => Math.min(totalPages, page + 1))}
-    />
+    <>
+      <TransactionList
+        transactions={transactions}
+        isLoading={isLoading}
+        errorMessage={isError && !hasData ? error.message : null}
+        onRetry={() => refetch()}
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        onEndReached={handleEndReached}
+        isFetchingNextPage={isFetchingNextPage}
+        nextPageErrorMessage={isError && hasData ? error.message : null}
+        onRetryNextPage={() => fetchNextPage()}
+        canModify={canModify}
+        onEdit={handleEdit}
+        onDelete={setTransactionToDelete}
+      />
+      <ConfirmDialog
+        open={transactionToDelete !== null}
+        onOpenChange={(open) => !open && setTransactionToDelete(null)}
+        title="Excluir transação"
+        description={`Tem certeza que deseja excluir "${transactionToDelete?.description ?? ''}"? Essa ação não pode ser desfeita.`}
+        isConfirming={isDeleting}
+        errorMessage={deleteError?.message}
+        onOpen={resetDelete}
+        onConfirm={handleDelete}
+      />
+    </>
   );
 }

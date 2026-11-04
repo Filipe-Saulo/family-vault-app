@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { api } from '@/api/api';
 import { toAppError } from '@/api/to-app-error';
@@ -27,10 +27,12 @@ async function listTransactions(params: ListTransactionsParams) {
   }
 }
 
-export function useTransactions(params: ListTransactionsParams) {
-  return useQuery({
-    queryKey: ['transactions', params],
-    queryFn: () => listTransactions(params),
-    placeholderData: keepPreviousData,
+export function useTransactions(params: Omit<ListTransactionsParams, 'pageNumber'>) {
+  return useInfiniteQuery({
+    queryKey: ['transactions', 'list', params],
+    queryFn: ({ pageParam }) => listTransactions({ ...params, pageNumber: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pageNumber * lastPage.pageSize < lastPage.totalCount ? lastPage.pageNumber + 1 : undefined,
   });
 }

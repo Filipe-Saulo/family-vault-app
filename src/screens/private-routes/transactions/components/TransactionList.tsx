@@ -1,51 +1,112 @@
+import { memo, useCallback } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ErrorState';
-import { PaginationFooter } from '@/components/PaginationFooter';
 import { Card, CardContent } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Text } from '@/components/ui/text';
 import { formatCurrency } from '@/lib/format';
 import { formatDateOnlyBR } from '@/lib/month-range';
 import { PurposeCode } from '@/types/enums/purpose-code';
 import type { Transaction } from '@/types/entities/transaction';
 
+interface TransactionRowProps {
+  transaction: Transaction;
+  canModify: boolean;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
+}
+
+const TransactionRow = memo(function TransactionRow({
+  transaction,
+  canModify,
+  onEdit,
+  onDelete,
+}: TransactionRowProps) {
+  const isIncome = transaction.transactionType.code === PurposeCode.Income;
+
+  return (
+    <Card>
+      <CardContent className="flex-row items-center justify-between gap-3">
+        <View className="flex-1 gap-1">
+          <Text className="font-medium">{transaction.description}</Text>
+          <Text variant="muted" className="text-xs">
+            {transaction.category.description} · {transaction.transactionType.name}
+          </Text>
+          <Text variant="muted" className="text-xs">
+            {formatDateOnlyBR(transaction.transactionDate.slice(0, 10))}
+          </Text>
+        </View>
+        <View className="items-end gap-2">
+          <Text className={isIncome ? 'font-medium text-success' : 'font-medium text-error'}>
+            {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
+          </Text>
+          {canModify && (
+            <View className="flex-row gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                accessibilityRole="button"
+                accessibilityLabel={`Editar transação ${transaction.description}`}
+                onPress={() => onEdit(transaction)}>
+                <Text>Editar</Text>
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                accessibilityRole="button"
+                accessibilityLabel={`Excluir transação ${transaction.description}`}
+                onPress={() => onDelete(transaction)}>
+                <Text>Excluir</Text>
+              </Button>
+            </View>
+          )}
+        </View>
+      </CardContent>
+    </Card>
+  );
+});
+
 interface TransactionListProps {
   transactions: Transaction[];
   isLoading: boolean;
   errorMessage: string | null;
   onRetry: () => void;
+  isRefreshing: boolean;
+  onRefresh: () => void;
+  onEndReached: () => void;
+  isFetchingNextPage: boolean;
+  nextPageErrorMessage: string | null;
+  onRetryNextPage: () => void;
   canModify: (transaction: Transaction) => boolean;
-  isDeleting: boolean;
-  deletingId?: number;
-  deleteErrorMessage?: string;
-  onDeleteDialogOpen?: () => void;
   onEdit: (transaction: Transaction) => void;
-  onDelete: (transactionId: number) => void;
-  pageNumber: number;
-  totalPages: number;
-  onPrevPage: () => void;
-  onNextPage: () => void;
+  onDelete: (transaction: Transaction) => void;
 }
+
+const keyExtractor = (item: Transaction) => String(item.transactionId);
 
 export function TransactionList({
   transactions,
   isLoading,
   errorMessage,
   onRetry,
+  isRefreshing,
+  onRefresh,
+  onEndReached,
+  isFetchingNextPage,
+  nextPageErrorMessage,
+  onRetryNextPage,
   canModify,
-  isDeleting,
-  deletingId,
-  deleteErrorMessage,
-  onDeleteDialogOpen,
   onEdit,
   onDelete,
-  pageNumber,
-  totalPages,
-  onPrevPage,
-  onNextPage,
 }: TransactionListProps) {
+  const renderItem = useCallback(
+    ({ item }: { item: Transaction }) => (
+      <TransactionRow transaction={item} canModify={canModify(item)} onEdit={onEdit} onDelete={onDelete} />
+    ),
+    [canModify, onEdit, onDelete]
+  );
+
   if (isLoading) {
     return (
       <View className="items-center justify-center py-8">
@@ -59,68 +120,29 @@ export function TransactionList({
   }
 
   return (
-    <View className="flex-1 gap-3">
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => String(item.transactionId)}
-        contentContainerClassName="gap-3"
-        ListEmptyComponent={
-          <Text variant="muted" className="mt-8 text-center">
-            Nenhuma transação encontrada.
-          </Text>
-        }
-        renderItem={({ item }) => {
-          const isIncome = item.transactionType.code === PurposeCode.Income;
-
-          return (
-            <Card>
-              <CardContent className="flex-row items-center justify-between gap-3">
-                <View className="flex-1 gap-1">
-                  <Text className="font-medium">{item.description}</Text>
-                  <Text variant="muted" className="text-xs">
-                    {item.category.description} · {item.transactionType.name}
-                  </Text>
-                  <Text variant="muted" className="text-xs">
-                    {formatDateOnlyBR(item.transactionDate.slice(0, 10))}
-                  </Text>
-                </View>
-                <View className="items-end gap-2">
-                  <Text className={isIncome ? 'font-medium text-success' : 'font-medium text-error'}>
-                    {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
-                  </Text>
-                  {canModify(item) && (
-                    <View className="flex-row gap-2">
-                      <Button variant="outline" size="sm" onPress={() => onEdit(item)}>
-                        <Text>Editar</Text>
-                      </Button>
-                      <ConfirmDialog
-                        trigger={
-                          <Button variant="destructive" size="sm">
-                            <Text>Excluir</Text>
-                          </Button>
-                        }
-                        title="Excluir transação"
-                        description={`Tem certeza que deseja excluir "${item.description}"? Essa ação não pode ser desfeita.`}
-                        isConfirming={isDeleting && deletingId === item.transactionId}
-                        errorMessage={deletingId === item.transactionId ? deleteErrorMessage : null}
-                        onOpen={onDeleteDialogOpen}
-                        onConfirm={() => onDelete(item.transactionId)}
-                      />
-                    </View>
-                  )}
-                </View>
-              </CardContent>
-            </Card>
-          );
-        }}
-      />
-
-      <PaginationFooter
-        pageNumber={pageNumber}
-        totalPages={totalPages}
-        onPrevPage={onPrevPage}
-        onNextPage={onNextPage}
-      />
-    </View>
+    <FlatList
+      data={transactions}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      contentContainerClassName="gap-3"
+      refreshing={isRefreshing}
+      onRefresh={onRefresh}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
+      ListEmptyComponent={
+        <Text variant="muted" className="mt-8 text-center">
+          Nenhuma transação encontrada.
+        </Text>
+      }
+      ListFooterComponent={
+        nextPageErrorMessage ? (
+          <ErrorState message={nextPageErrorMessage} onRetry={onRetryNextPage} />
+        ) : isFetchingNextPage ? (
+          <View className="items-center py-4">
+            <ActivityIndicator />
+          </View>
+        ) : null
+      }
+    />
   );
 }

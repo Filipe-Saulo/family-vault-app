@@ -39,12 +39,18 @@ export function CategoryForm({
       {apiError && <Text className="text-center text-sm text-error">{apiError.message}</Text>}
 
       <View className="gap-1.5">
-        <Label>Descrição</Label>
+        <Label nativeID="category-description-label">Descrição</Label>
         <Controller
           control={control}
           name="description"
           render={({ field: { value, onChange, onBlur } }) => (
-            <Input value={value} onChangeText={onChange} onBlur={onBlur} placeholder="Ex: Supermercado" />
+            <Input
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder="Ex: Supermercado"
+              aria-labelledby="category-description-label"
+            />
           )}
         />
         {errors.description && <Text className="text-sm text-error">{errors.description.message}</Text>}

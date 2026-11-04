@@ -13,7 +13,10 @@ import {
 import { Text } from '@/components/ui/text';
 
 interface ConfirmDialogProps {
-  trigger: ReactNode;
+  /** Omit when the dialog is controlled through `open`/`onOpenChange`. */
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: string;
   description: string;
   confirmLabel?: string;
@@ -26,6 +29,8 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({
   trigger,
+  open,
+  onOpenChange,
   title,
   description,
   confirmLabel = 'Excluir',
@@ -35,8 +40,13 @@ export function ConfirmDialog({
   onOpen,
 }: ConfirmDialogProps) {
   return (
-    <Dialog onOpenChange={(open) => open && onOpen?.()}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        onOpenChange?.(nextOpen);
+        if (nextOpen) onOpen?.();
+      }}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
