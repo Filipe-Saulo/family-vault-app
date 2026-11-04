@@ -15,7 +15,10 @@ async function login(payload: LoginRequestSchema) {
 
   try {
     const { data } = await api.post<ApiResponse<AuthResponse>>('/app/login', body);
-    return data.data;
+    if (!data.data.refreshToken) {
+      throw new AppError('Não foi possível concluir o login. Tente novamente.');
+    }
+    return { ...data.data, refreshToken: data.data.refreshToken };
   } catch (error) {
     if (isAxiosError<ApiResponse<unknown>>(error) && error.response?.data?.message) {
       throw new AppError(error.response.data.message);
