@@ -5,7 +5,7 @@ import type { ApiResponse } from '@/types/entities/api-response';
 
 // Endpoints an expired/invalid access token can hit directly - never trigger
 // the refresh flow for these, or a failed login would loop into a refresh attempt.
-const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/resetPassword'];
+const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/resetPassword', '/logout'];
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
@@ -90,7 +90,15 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      authStoreHelpers.clearAuthData();
+      // Only a 4xx answer (e.g. 401) means the session is dead. Network errors, timeouts
+      // and 5xx (API down, gateway during a deploy) keep the user logged in so the next
+      // call can try the refresh again.
+      const status = axios.isAxiosError(refreshError) ? refreshError.response?.status : undefined;
+      const sessionIsDead =
+        !axios.isAxiosError(refreshError) || (status !== undefined && status >= 400 && status < 500);
+      if (sessionIsDead) {
+        authStoreHelpers.clearAuthData();
+      }
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

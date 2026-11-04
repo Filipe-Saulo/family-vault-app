@@ -2,10 +2,9 @@ import { View } from 'react-native';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { formatCurrency } from '@/lib/format';
 import { PurposeCode } from '@/types/enums/purpose-code';
 import type { DashboardSummary } from '@/types/entities/dashboard-summary';
-
-const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 interface DashboardCategoryBreakdownProps {
   byCategory: DashboardSummary['byCategory'];
@@ -34,7 +33,7 @@ export function DashboardCategoryBreakdown({ byCategory }: DashboardCategoryBrea
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm">{item.categoryDescription}</Text>
                 <Text className={isIncome ? 'text-sm font-medium text-success' : 'text-sm font-medium text-error'}>
-                  {currencyFormatter.format(item.total)}
+                  {formatCurrency(item.total)}
                 </Text>
               </View>
               <View className="h-2 w-full overflow-hidden rounded-full bg-muted">

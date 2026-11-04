@@ -10,6 +10,7 @@ import {
   setTokens,
   setUserId,
 } from '@/lib/mmkv/storage-helpers';
+import { queryClient } from '@/lib/react-query/react-query-client';
 import type { DecodedToken } from '@/types/entities/decoded-token';
 
 interface AuthState {
@@ -55,6 +56,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: () => {
     clearAuthData();
+    // Drop cached server data so the next user to log in never sees the previous one's.
+    queryClient.clear();
     set({ token: null, refreshToken: null, userId: null, roles: [], permissions: [] });
   },
   restoreSession: () => {

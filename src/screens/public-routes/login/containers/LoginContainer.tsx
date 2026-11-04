@@ -28,7 +28,7 @@ export function LoginContainer() {
   const onSubmit = handleSubmit((values) => {
     mutate(values, {
       onSuccess: (data) => {
-        setAuth({ token: data.token, refreshToken: data.refreshToken ?? '', userId: data.userId });
+        setAuth({ token: data.token, refreshToken: data.refreshToken, userId: data.userId });
       },
     });
   });

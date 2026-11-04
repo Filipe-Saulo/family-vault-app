@@ -41,6 +41,8 @@ export function CategoryFormContainer({ category }: CategoryFormContainerProps) 
   const onSubmit = handleSubmit((values) => {
     const onSuccess = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
       navigation.goBack();
     };
 

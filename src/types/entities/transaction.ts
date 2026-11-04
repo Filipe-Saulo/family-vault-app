@@ -10,11 +10,13 @@ export interface Transaction {
     purpose: {
       categoryPurposeId: number;
       name: string;
+      code: number;
     };
   };
   transactionType: {
     transactionTypeId: number;
     name: string;
+    code: number;
   };
   createdAt: string;
   updatedAt: string | null;
