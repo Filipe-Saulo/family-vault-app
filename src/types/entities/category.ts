@@ -6,6 +6,7 @@ export interface Category {
     name: string;
     code: number;
   };
+  isGlobal: boolean;
   createdAt: string;
   updatedAt: string | null;
 }

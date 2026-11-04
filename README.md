@@ -15,7 +15,7 @@ A personal finance and transaction-tracking mobile app, built with **React Nativ
 | Client state | [Zustand](https://github.com/pmndrs/zustand) |
 | Forms & validation | React Hook Form + Zod |
 | HTTP | Axios (single instance, JWT refresh interceptor with request queueing) |
-| Persistence | `react-native-mmkv` (secure token storage) |
+| Persistence | `react-native-mmkv` (access token, user id) + `expo-secure-store` (refresh token, in the OS Keychain/Keystore) |
 | Styling | NativeWind (Tailwind for React Native) + `react-native-reusables` |
 | Icons | `lucide-react-native` |
 
@@ -59,7 +59,7 @@ Each screen feature follows the same three-layer split: a thin `screens/` wrappe
 ### Install & run
 
 ```bash
-npm install
+npm install   # .npmrc sets legacy-peer-deps: jest-expo and react-native pin different @react-native/jest-preset peers
 
 # point the app at your running Family-Vault-Api instance
 cp .env.example .env.local   # then edit EXPO_PUBLIC_API_URL (use the LAN IP on a physical device)
@@ -70,7 +70,9 @@ npm run android   # or: npm run ios / npm run web
 ### Other useful commands
 
 ```bash
-npx tsc --noEmit                        # type-check
+npm run typecheck                       # tsc --noEmit
+npm run lint                            # expo lint (eslint-config-expo)
+npm test                                # jest-expo (mocks MMKV and SecureStore)
 npx expo export --platform android      # bundle-only build check
 ```
 

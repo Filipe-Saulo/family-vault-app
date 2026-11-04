@@ -112,7 +112,7 @@ export function TransactionForm({
       </View>
 
       <View className="gap-1.5">
-        <Label>Valor</Label>
+        <Label nativeID="transaction-amount-label">Valor</Label>
         <Controller
           control={control}
           name="amount"
@@ -126,6 +126,7 @@ export function TransactionForm({
               }}
               onBlur={onBlur}
               keyboardType="number-pad"
+              aria-labelledby="transaction-amount-label"
               placeholder="R$ 0,00"
             />
           )}
@@ -134,7 +135,7 @@ export function TransactionForm({
       </View>
 
       <View className="gap-1.5">
-        <Label>Data</Label>
+        <Label nativeID="transaction-date-label">Data</Label>
         <Controller
           control={control}
           name="transactionDate"
@@ -148,12 +149,18 @@ export function TransactionForm({
       </View>
 
       <View className="gap-1.5">
-        <Label>Detalhes</Label>
+        <Label nativeID="transaction-description-label">Detalhes</Label>
         <Controller
           control={control}
           name="description"
           render={({ field: { value, onChange, onBlur } }) => (
-            <Input value={value} onChangeText={onChange} onBlur={onBlur} placeholder="Ex: Compras do mês" />
+            <Input
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder="Ex: Compras do mês"
+              aria-labelledby="transaction-description-label"
+            />
           )}
         />
         {errors.description && <Text className="text-sm text-error">{errors.description.message}</Text>}

@@ -62,6 +62,8 @@ function DateField({ value, onChange, onBlur, placeholder = 'Selecione a data' }
       <View className="flex-row items-center gap-2">
         <Pressable
           onPress={openPicker}
+          accessibilityRole="button"
+          accessibilityLabel={displayValue ? `Data selecionada: ${displayValue}. Alterar data` : placeholder}
           className="dark:bg-input/30 border-input bg-background flex h-10 flex-1 flex-row items-center gap-2 rounded-md border px-3 py-1 shadow-sm shadow-black/5 sm:h-9">
           <Icon as={CalendarIcon} className="text-muted-foreground size-4" />
           <Text className={cn('text-base leading-5', !displayValue && 'text-muted-foreground/50')}>

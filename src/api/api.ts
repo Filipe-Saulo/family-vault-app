@@ -5,7 +5,7 @@ import type { ApiResponse } from '@/types/entities/api-response';
 
 // Endpoints an expired/invalid access token can hit directly - never trigger
 // the refresh flow for these, or a failed login would loop into a refresh attempt.
-const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/resetPassword', '/logout'];
+const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/password/forgot', '/password/reset', '/logout'];
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
@@ -51,6 +51,16 @@ api.interceptors.response.use(
 
     if (!originalRequest || error.response?.status !== 401 || isPublicRoute || originalRequest._retry) {
       return Promise.reject(error);
+    }
+
+    // The request left with an older token than the current one: a refresh already
+    // finished meanwhile, so just replay it with the current token (no second refresh).
+    const sentAuthorization = originalRequest.headers?.Authorization;
+    const currentToken = authStoreHelpers.getToken();
+    if (currentToken && sentAuthorization && sentAuthorization !== `Bearer ${currentToken}`) {
+      originalRequest._retry = true;
+      originalRequest.headers.Authorization = `Bearer ${currentToken}`;
+      return api(originalRequest);
     }
 
     if (isRefreshing) {

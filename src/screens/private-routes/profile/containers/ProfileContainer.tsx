@@ -43,6 +43,10 @@ export function ProfileContainer() {
         <Text>Editar perfil</Text>
       </Button>
 
+      <Button variant="outline" onPress={() => navigation.navigate('changePassword')}>
+        <Text>Trocar senha</Text>
+      </Button>
+
       <ThemeToggle />
 
       <ConfirmDialog
