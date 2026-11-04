@@ -26,11 +26,6 @@ export function ProfileEditForm({
 }: ProfileEditFormProps) {
   return (
     <View className="gap-4">
-      <Text variant="muted" className="text-sm">
-        Não é possível carregar seus dados atuais nesta versão do app — preencha os campos abaixo para
-        atualizar seu cadastro.
-      </Text>
-
       {apiError && <Text className="text-center text-sm text-error">{apiError.message}</Text>}
       {successMessage && <Text className="text-center text-sm text-success">{successMessage}</Text>}
 

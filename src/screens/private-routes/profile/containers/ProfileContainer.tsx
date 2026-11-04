@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/text';
 import { logout } from '@/lib/session';
 import type { ProfileStackRoutes } from '@/navigation/private-routes/profile-stack/profileRoutes';
 import { useDeleteUser } from '@/services/user/delete-user-service';
+import { useMe } from '@/services/user/get-me-service';
 import { useAuthStore } from '@/store/authStore';
 
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -15,7 +16,8 @@ import { ThemeToggle } from '../components/ThemeToggle';
 export function ProfileContainer() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackRoutes>>();
   const userId = useAuthStore((state) => state.userId);
-  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
+  const { data: me } = useMe();
+  const { mutate: deleteUser, isPending: isDeleting, error: deleteError, reset: resetDelete } = useDeleteUser();
 
   const handleDeleteAccount = () => {
     if (!userId) return;
@@ -24,9 +26,18 @@ export function ProfileContainer() {
 
   return (
     <View className="gap-4">
-      <Text variant="muted" className="text-xs">
-        ID da conta: {userId}
-      </Text>
+      {me ? (
+        <View className="gap-1">
+          <Text className="font-medium">{me.fullName}</Text>
+          <Text variant="muted" className="text-xs">
+            {me.email || me.phoneNumber}
+          </Text>
+        </View>
+      ) : (
+        <Text variant="muted" className="text-xs">
+          ID da conta: {userId}
+        </Text>
+      )}
 
       <Button variant="outline" onPress={() => navigation.navigate('profileEdit')}>
         <Text>Editar perfil</Text>
@@ -43,6 +54,8 @@ export function ProfileContainer() {
         title="Excluir conta"
         description="Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
         isConfirming={isDeleting}
+        errorMessage={deleteError?.message}
+        onOpen={resetDelete}
         onConfirm={handleDeleteAccount}
       />
 

@@ -7,7 +7,6 @@ import { hasPermission, hasRole } from '@/lib/permissions';
 import type { TransactionsStackRoutes } from '@/navigation/private-routes/transactions-stack/transactionsRoutes';
 import { useDeleteTransaction } from '@/services/transaction/delete-transaction-service';
 import { useTransactions } from '@/services/transaction/list-transactions-service';
-import { useTransactionTypes } from '@/services/transaction-type/list-transaction-types-service';
 import { useAuthStore } from '@/store/authStore';
 import type { Transaction } from '@/types/entities/transaction';
 
@@ -23,9 +22,18 @@ export function TransactionsListContainer() {
   const permissions = useAuthStore((state) => state.permissions);
   const userId = useAuthStore((state) => state.userId);
 
-  const { data } = useTransactions({ pageNumber, pageSize: PAGE_SIZE, userId: userId ?? undefined });
-  const { data: transactionTypes } = useTransactionTypes(true);
-  const { mutate: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
+  const { data, isLoading, isError, error, refetch } = useTransactions({
+    pageNumber,
+    pageSize: PAGE_SIZE,
+    userId: userId ?? undefined,
+  });
+  const {
+    mutate: deleteTransaction,
+    isPending: isDeleting,
+    variables: deletingId,
+    error: deleteError,
+    reset: resetDelete,
+  } = useDeleteTransaction();
 
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
 
@@ -50,9 +58,14 @@ export function TransactionsListContainer() {
   return (
     <TransactionList
       transactions={data?.items ?? []}
-      transactionTypes={transactionTypes ?? []}
+      isLoading={isLoading}
+      errorMessage={isError ? error.message : null}
+      onRetry={() => refetch()}
       canModify={canModify}
       isDeleting={isDeleting}
+      deletingId={deletingId}
+      deleteErrorMessage={deleteError?.message}
+      onDeleteDialogOpen={resetDelete}
       onEdit={handleEdit}
       onDelete={handleDelete}
       pageNumber={pageNumber}

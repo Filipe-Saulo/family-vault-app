@@ -19,6 +19,9 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   onConfirm: () => void;
   isConfirming?: boolean;
+  errorMessage?: string | null;
+  /** Called when the dialog opens, e.g. to reset a previous failed mutation. */
+  onOpen?: () => void;
 }
 
 export function ConfirmDialog({
@@ -28,15 +31,18 @@ export function ConfirmDialog({
   confirmLabel = 'Excluir',
   onConfirm,
   isConfirming,
+  errorMessage,
+  onOpen,
 }: ConfirmDialogProps) {
   return (
-    <Dialog>
+    <Dialog onOpenChange={(open) => open && onOpen?.()}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {errorMessage && <Text className="text-center text-sm text-error">{errorMessage}</Text>}
         <DialogFooter>
           <Button variant="destructive" onPress={onConfirm} disabled={isConfirming}>
             <Text>{isConfirming ? 'Excluindo...' : confirmLabel}</Text>

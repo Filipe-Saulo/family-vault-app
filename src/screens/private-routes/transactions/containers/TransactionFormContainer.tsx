@@ -8,8 +8,7 @@ import {
   createTransactionRequestSchema,
   type CreateTransactionRequestSchema,
 } from '@/schemas/services/transaction/create-transaction-request-schema';
-import { useCategories } from '@/services/category/list-categories-service';
-import { useCategoryPurposes } from '@/services/category-purpose/list-category-purposes-service';
+import { useCategoriesLookup } from '@/services/category/lookup-categories-service';
 import { useCreateTransaction } from '@/services/transaction/create-transaction-service';
 import { useUpdateTransaction } from '@/services/transaction/update-transaction-service';
 import { useTransactionTypes } from '@/services/transaction-type/list-transaction-types-service';
@@ -27,10 +26,9 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
 
-  const { data: categoriesResult } = useCategories({ pageSize: 100 });
-  const { data: categoryPurposes } = useCategoryPurposes(true);
+  const { data: categoriesLookup } = useCategoriesLookup();
   const { data: transactionTypes } = useTransactionTypes(true);
-  const categories = categoriesResult?.items ?? [];
+  const categories = categoriesLookup ?? [];
 
   const { mutate: createTransaction, isPending: isCreating, error: createError } = useCreateTransaction();
   const { mutate: updateTransaction, isPending: isUpdating, error: updateError } = useUpdateTransaction();
@@ -59,14 +57,11 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
   const canSubmit = Boolean(categoryId) && Boolean(transactionTypeId) && Boolean(amount) && Boolean(transactionDate);
 
   const selectedCategory = categories.find((c) => c.categoryId === categoryId);
-  const selectedPurpose = categoryPurposes?.find(
-    (purpose) => purpose.categoryPurposeId === selectedCategory?.purpose.categoryPurposeId
-  );
 
   // Filter the type options to those whose Code matches the selected category's
   // Purpose.Code - the API rejects a mismatched pair on create/update.
-  const transactionTypeOptions = selectedPurpose
-    ? (transactionTypes ?? []).filter((type) => type.code === selectedPurpose.code)
+  const transactionTypeOptions = selectedCategory
+    ? (transactionTypes ?? []).filter((type) => type.code === selectedCategory.purpose.code)
     : (transactionTypes ?? []);
 
   useEffect(() => {
@@ -80,7 +75,7 @@ export function TransactionFormContainer({ transaction }: TransactionFormContain
       setValue('transactionTypeId', transactionTypeOptions[0].transactionTypeId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId, transactionTypes]);
+  }, [categoryId, categories.length, transactionTypes]);
 
   const onSubmit = handleSubmit((values) => {
     const onSuccess = () => {

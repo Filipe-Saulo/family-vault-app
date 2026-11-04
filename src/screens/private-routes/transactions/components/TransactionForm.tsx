@@ -13,11 +13,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
+import { formatCurrency } from '@/lib/format';
 import type { CreateTransactionRequestSchema } from '@/schemas/services/transaction/create-transaction-request-schema';
 import type { Category } from '@/types/entities/category';
 import type { TransactionType } from '@/types/entities/transaction-type';
-
-const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 interface TransactionFormProps {
   control: Control<CreateTransactionRequestSchema>;
@@ -119,7 +118,7 @@ export function TransactionForm({
           name="amount"
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
-              value={value ? currencyFormatter.format(value) : ''}
+              value={value ? formatCurrency(value) : ''}
               onChangeText={(text) => {
                 const digits = text.replace(/\D/g, '');
                 const amount = digits ? Number(digits) / 100 : 0;

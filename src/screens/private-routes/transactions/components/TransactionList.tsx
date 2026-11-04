@@ -1,20 +1,26 @@
-import { FlatList, View } from 'react-native';
+import { ActivityIndicator, FlatList, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
+import { ErrorState } from '@/components/ErrorState';
+import { PaginationFooter } from '@/components/PaginationFooter';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Text } from '@/components/ui/text';
+import { formatCurrency } from '@/lib/format';
+import { formatDateOnlyBR } from '@/lib/month-range';
 import { PurposeCode } from '@/types/enums/purpose-code';
 import type { Transaction } from '@/types/entities/transaction';
-import type { TransactionType } from '@/types/entities/transaction-type';
-
-const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 interface TransactionListProps {
   transactions: Transaction[];
-  transactionTypes: TransactionType[];
+  isLoading: boolean;
+  errorMessage: string | null;
+  onRetry: () => void;
   canModify: (transaction: Transaction) => boolean;
   isDeleting: boolean;
+  deletingId?: number;
+  deleteErrorMessage?: string;
+  onDeleteDialogOpen?: () => void;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transactionId: number) => void;
   pageNumber: number;
@@ -25,9 +31,14 @@ interface TransactionListProps {
 
 export function TransactionList({
   transactions,
-  transactionTypes,
+  isLoading,
+  errorMessage,
+  onRetry,
   canModify,
   isDeleting,
+  deletingId,
+  deleteErrorMessage,
+  onDeleteDialogOpen,
   onEdit,
   onDelete,
   pageNumber,
@@ -35,6 +46,18 @@ export function TransactionList({
   onPrevPage,
   onNextPage,
 }: TransactionListProps) {
+  if (isLoading) {
+    return (
+      <View className="items-center justify-center py-8">
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (errorMessage) {
+    return <ErrorState message={errorMessage} onRetry={onRetry} />;
+  }
+
   return (
     <View className="flex-1 gap-3">
       <FlatList
@@ -47,8 +70,7 @@ export function TransactionList({
           </Text>
         }
         renderItem={({ item }) => {
-          const type = transactionTypes.find((t) => t.transactionTypeId === item.transactionType.transactionTypeId);
-          const isIncome = type?.code === PurposeCode.Income;
+          const isIncome = item.transactionType.code === PurposeCode.Income;
 
           return (
             <Card>
@@ -59,12 +81,12 @@ export function TransactionList({
                     {item.category.description} · {item.transactionType.name}
                   </Text>
                   <Text variant="muted" className="text-xs">
-                    {new Date(item.transactionDate).toLocaleDateString('pt-BR')}
+                    {formatDateOnlyBR(item.transactionDate.slice(0, 10))}
                   </Text>
                 </View>
                 <View className="items-end gap-2">
                   <Text className={isIncome ? 'font-medium text-success' : 'font-medium text-error'}>
-                    {isIncome ? '+' : '-'} {currencyFormatter.format(item.amount)}
+                    {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
                   </Text>
                   {canModify(item) && (
                     <View className="flex-row gap-2">
@@ -79,7 +101,9 @@ export function TransactionList({
                         }
                         title="Excluir transação"
                         description={`Tem certeza que deseja excluir "${item.description}"? Essa ação não pode ser desfeita.`}
-                        isConfirming={isDeleting}
+                        isConfirming={isDeleting && deletingId === item.transactionId}
+                        errorMessage={deletingId === item.transactionId ? deleteErrorMessage : null}
+                        onOpen={onDeleteDialogOpen}
                         onConfirm={() => onDelete(item.transactionId)}
                       />
                     </View>
@@ -91,19 +115,12 @@ export function TransactionList({
         }}
       />
 
-      {totalPages > 1 && (
-        <View className="flex-row items-center justify-between">
-          <Button variant="outline" size="sm" disabled={pageNumber <= 1} onPress={onPrevPage}>
-            <Text>Anterior</Text>
-          </Button>
-          <Text variant="muted" className="text-xs">
-            Página {pageNumber} de {totalPages}
-          </Text>
-          <Button variant="outline" size="sm" disabled={pageNumber >= totalPages} onPress={onNextPage}>
-            <Text>Próxima</Text>
-          </Button>
-        </View>
-      )}
+      <PaginationFooter
+        pageNumber={pageNumber}
+        totalPages={totalPages}
+        onPrevPage={onPrevPage}
+        onNextPage={onNextPage}
+      />
     </View>
   );
 }

@@ -21,8 +21,14 @@ export function CategoriesListContainer() {
   const roles = useAuthStore((state) => state.roles);
   const permissions = useAuthStore((state) => state.permissions);
 
-  const { data } = useCategories({ pageNumber, pageSize: PAGE_SIZE });
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
+  const { data, isLoading, isError, error, refetch } = useCategories({ pageNumber, pageSize: PAGE_SIZE });
+  const {
+    mutate: deleteCategory,
+    isPending: isDeleting,
+    variables: deletingId,
+    error: deleteError,
+    reset: resetDelete,
+  } = useDeleteCategory();
 
   const canModify = hasRole(roles, 'Administrator') || hasPermission(permissions, 'ManageCategories');
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE)) : 1;
@@ -33,15 +39,25 @@ export function CategoriesListContainer() {
 
   const handleDelete = (categoryId: number) => {
     deleteCategory(categoryId, {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
+      },
     });
   };
 
   return (
     <CategoryList
       categories={data?.items ?? []}
+      isLoading={isLoading}
+      errorMessage={isError ? error.message : null}
+      onRetry={() => refetch()}
       canModify={canModify}
       isDeleting={isDeleting}
+      deletingId={deletingId}
+      deleteErrorMessage={deleteError?.message}
+      onDeleteDialogOpen={resetDelete}
       onEdit={handleEdit}
       onDelete={handleDelete}
       pageNumber={pageNumber}

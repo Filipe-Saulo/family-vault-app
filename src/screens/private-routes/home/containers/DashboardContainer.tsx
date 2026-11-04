@@ -1,5 +1,6 @@
 import { Dialog } from '@/components/ui/dialog';
-import { dateOnlyToRangeBoundary, formatDateOnlyBR, getMonthRange } from '@/lib/month-range';
+import { ErrorState } from '@/components/ErrorState';
+import { formatDateOnlyBR, getMonthRange } from '@/lib/month-range';
 import { useDashboardSummary } from '@/services/dashboard/get-dashboard-summary-service';
 import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -43,12 +44,12 @@ export function DashboardContainer() {
     filter.mode === 'month'
       ? getMonthRange(filter.offset)
       : {
-          startDate: dateOnlyToRangeBoundary(filter.startDate, 'start'),
-          endDate: dateOnlyToRangeBoundary(filter.endDate, 'end'),
+          startDate: filter.startDate,
+          endDate: filter.endDate,
           label: `${formatDateOnlyBR(filter.startDate)} – ${formatDateOnlyBR(filter.endDate)}`,
         };
 
-  const { data, isLoading } = useDashboardSummary({ startDate: range.startDate, endDate: range.endDate });
+  const { data, isLoading, isError, error, refetch } = useDashboardSummary({ startDate: range.startDate, endDate: range.endDate });
 
   return (
     <View className="gap-4">
@@ -69,7 +70,9 @@ export function DashboardContainer() {
         />
       </Dialog>
 
-      {isLoading || !data ? (
+      {isError ? (
+        <ErrorState message={error.message} onRetry={() => refetch()} />
+      ) : isLoading || !data ? (
         <View className="items-center justify-center py-8">
           <ActivityIndicator />
         </View>

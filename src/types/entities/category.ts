@@ -4,6 +4,7 @@ export interface Category {
   purpose: {
     categoryPurposeId: number;
     name: string;
+    code: number;
   };
   createdAt: string;
   updatedAt: string | null;
