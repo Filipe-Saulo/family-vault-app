@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { passwordSchema } from './password-schema';
+
 const PHONE_FORMAT_REGEX = /^[\d+()\-\s]+$/;
 
 export const registerRequestSchema = z
@@ -14,12 +16,7 @@ export const registerRequestSchema = z
         (value) => value.length >= 8 && value.length <= 17 && PHONE_FORMAT_REGEX.test(value),
         'Telefone inválido.'
       ),
-    password: z
-      .string()
-      .min(6, 'Senha deve ter no mínimo 6 caracteres.')
-      .regex(/\d/, 'Senha deve ter ao menos 1 número.')
-      .regex(/[a-z]/, 'Senha deve ter ao menos 1 letra minúscula.')
-      .regex(/[A-Z]/, 'Senha deve ter ao menos 1 letra maiúscula.'),
+    password: passwordSchema,
     passwordConfirm: z.string().min(1, 'Confirmação de senha é obrigatória.'),
   })
   .refine((data) => data.password === data.passwordConfirm, {
