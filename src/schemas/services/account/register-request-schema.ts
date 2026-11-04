@@ -6,7 +6,7 @@ export const registerRequestSchema = z
   .object({
     firstName: z.string().min(1, 'Nome é obrigatório.').max(30, 'Nome muito longo.'),
     lastName: z.string().min(1, 'Sobrenome é obrigatório.').max(70, 'Sobrenome muito longo.'),
-    age: z.number({ message: 'Idade é obrigatória.' }).int().positive('Idade inválida.'),
+    age: z.number({ message: 'Idade é obrigatória.' }).int().min(0, 'Idade inválida.').max(150, 'Idade inválida.'),
     phoneNumber: z
       .string()
       .min(1, 'Telefone é obrigatório.')
@@ -18,7 +18,8 @@ export const registerRequestSchema = z
       .string()
       .min(6, 'Senha deve ter no mínimo 6 caracteres.')
       .regex(/\d/, 'Senha deve ter ao menos 1 número.')
-      .regex(/[a-z]/, 'Senha deve ter ao menos 1 letra minúscula.'),
+      .regex(/[a-z]/, 'Senha deve ter ao menos 1 letra minúscula.')
+      .regex(/[A-Z]/, 'Senha deve ter ao menos 1 letra maiúscula.'),
     passwordConfirm: z.string().min(1, 'Confirmação de senha é obrigatória.'),
   })
   .refine((data) => data.password === data.passwordConfirm, {
