@@ -7,6 +7,7 @@ import {
   getRefreshToken,
   getToken,
   getUserId,
+  migrateRefreshTokenToSecureStore,
   setTokens,
   setUserId,
 } from '@/lib/mmkv/storage-helpers';
@@ -61,6 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token: null, refreshToken: null, userId: null, roles: [], permissions: [] });
   },
   restoreSession: () => {
+    migrateRefreshTokenToSecureStore();
     const token = getToken();
     set({
       token,

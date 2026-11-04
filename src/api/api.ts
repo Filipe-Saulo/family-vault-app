@@ -53,6 +53,16 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // The request left with an older token than the current one: a refresh already
+    // finished meanwhile, so just replay it with the current token (no second refresh).
+    const sentAuthorization = originalRequest.headers?.Authorization;
+    const currentToken = authStoreHelpers.getToken();
+    if (currentToken && sentAuthorization && sentAuthorization !== `Bearer ${currentToken}`) {
+      originalRequest._retry = true;
+      originalRequest.headers.Authorization = `Bearer ${currentToken}`;
+      return api(originalRequest);
+    }
+
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
