@@ -19,7 +19,6 @@ React Native mobile app for Family Vault — personal finance management and tra
 - `npm test` — Jest via `jest-expo` (`jest.config.js`, `jest.setup.ts` holds in-memory mocks of `react-native-mmkv` and `expo-secure-store`); tests live in `__tests__/` next to the code
 - `npx expo export --platform android` — bundle-only build check (useful to verify Babel/Metro/NativeWind config without a device/emulator)
 
-There is no configured lint or test script yet.
 
 ## Architecture notes
 
