@@ -21,7 +21,11 @@ export function LoginScreen() {
 
         <LoginContainer />
 
-        <Button variant="link" className="mt-4" onPress={() => navigation.navigate('register' as never)}>
+        <Button variant="link" className="mt-2" onPress={() => navigation.navigate('forgotPassword' as never)}>
+          <Text>Esqueci minha senha</Text>
+        </Button>
+
+        <Button variant="link" className="mt-2" onPress={() => navigation.navigate('register' as never)}>
           <Text>Não tem conta? Cadastre-se</Text>
         </Button>
       </KeyboardAvoidingView>
