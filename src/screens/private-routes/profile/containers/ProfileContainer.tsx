@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Text } from '@/components/ui/text';
+import { logout } from '@/lib/session';
 import type { ProfileStackRoutes } from '@/navigation/private-routes/profile-stack/profileRoutes';
 import { useDeleteUser } from '@/services/user/delete-user-service';
 import { useAuthStore } from '@/store/authStore';
@@ -14,7 +15,6 @@ import { ThemeToggle } from '../components/ThemeToggle';
 export function ProfileContainer() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackRoutes>>();
   const userId = useAuthStore((state) => state.userId);
-  const logout = useAuthStore((state) => state.logout);
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
 
   const handleDeleteAccount = () => {
@@ -46,7 +46,7 @@ export function ProfileContainer() {
         onConfirm={handleDeleteAccount}
       />
 
-      <Button onPress={logout}>
+      <Button onPress={() => logout()}>
         <Text>Sair</Text>
       </Button>
     </View>
