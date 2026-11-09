@@ -9,7 +9,7 @@ export interface CurrentUser {
   firstName: string;
   lastName: string;
   fullName: string;
-  phoneNumber: string;
+  phoneNumber: string | null;
   email: string | null;
   age: number;
 }

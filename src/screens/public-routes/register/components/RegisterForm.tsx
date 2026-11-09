@@ -1,11 +1,13 @@
-import { Controller, type Control, type FieldErrors } from 'react-hook-form';
+import { Controller, useWatch, type Control, type FieldErrors } from 'react-hook-form';
 import { View } from 'react-native';
 
+import { ChannelToggle } from '@/components/ChannelToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PhoneField } from '@/components/ui/phone-field';
 import { Text } from '@/components/ui/text';
+import type { VerificationMethod } from '@/schemas/services/account/contact-issues';
 import type { RegisterRequestSchema } from '@/schemas/services/account/register-request-schema';
 
 interface RegisterFormProps {
@@ -13,10 +15,13 @@ interface RegisterFormProps {
   errors: FieldErrors<RegisterRequestSchema>;
   isSubmitting: boolean;
   onSubmit: () => void;
+  onMethodChange: (method: VerificationMethod) => void;
   apiError?: Error | null;
 }
 
-export function RegisterForm({ control, errors, isSubmitting, onSubmit, apiError }: RegisterFormProps) {
+export function RegisterForm({ control, errors, isSubmitting, onSubmit, onMethodChange, apiError }: RegisterFormProps) {
+  const method = useWatch({ control, name: 'method' });
+
   return (
     <View className="gap-4">
       {apiError && <Text className="text-center text-sm text-error">{apiError.message}</Text>}
@@ -64,16 +69,42 @@ export function RegisterForm({ control, errors, isSubmitting, onSubmit, apiError
       </View>
 
       <View className="gap-1.5">
-        <Label>Telefone</Label>
-        <Controller
-          control={control}
-          name="phoneNumber"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <PhoneField value={value} onChange={onChange} onBlur={onBlur} placeholder="11987654321" />
-          )}
-        />
-        {errors.phoneNumber && <Text className="text-sm text-error">{errors.phoneNumber.message}</Text>}
+        <Label>Receber o código por</Label>
+        <ChannelToggle method={method} onChange={onMethodChange} />
       </View>
+
+      {method === 'email' ? (
+        <View className="gap-1.5">
+          <Label>E-mail</Label>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <Input
+                placeholder="voce@email.com"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
+          />
+          {errors.email && <Text className="text-sm text-error">{errors.email.message}</Text>}
+        </View>
+      ) : (
+        <View className="gap-1.5">
+          <Label>Telefone</Label>
+          <Controller
+            control={control}
+            name="phoneNumber"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <PhoneField value={value ?? ''} onChange={onChange} onBlur={onBlur} placeholder="11987654321" />
+            )}
+          />
+          {errors.phoneNumber && <Text className="text-sm text-error">{errors.phoneNumber.message}</Text>}
+        </View>
+      )}
 
       <View className="gap-1.5">
         <Label>Senha</Label>
@@ -102,7 +133,7 @@ export function RegisterForm({ control, errors, isSubmitting, onSubmit, apiError
       </View>
 
       <Button onPress={onSubmit} disabled={isSubmitting}>
-        <Text>{isSubmitting ? 'Criando conta...' : 'Criar conta'}</Text>
+        <Text>{isSubmitting ? 'Enviando...' : 'Continuar'}</Text>
       </Button>
     </View>
   );

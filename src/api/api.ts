@@ -5,7 +5,7 @@ import type { ApiResponse } from '@/types/entities/api-response';
 
 // Endpoints an expired/invalid access token can hit directly - never trigger
 // the refresh flow for these, or a failed login would loop into a refresh attempt.
-const PUBLIC_ROUTES = ['/register', '/app/login', '/app/refreshtoken', '/password/forgot', '/password/reset', '/logout'];
+const PUBLIC_ROUTES = ['/register', '/register/code','/app/login', '/app/refreshtoken', '/password/forgot', '/password/reset', '/logout'];
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 

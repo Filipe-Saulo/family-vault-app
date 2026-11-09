@@ -6,8 +6,10 @@ import type { ForgotPasswordRequestSchema } from '@/schemas/services/account/for
 import type { ApiResponse } from '@/types/entities/api-response';
 
 async function forgotPassword(payload: ForgotPasswordRequestSchema) {
+  const body = payload.method === 'email' ? { email: payload.email } : { phone: payload.phone };
+
   try {
-    const { data } = await api.post<ApiResponse<string | null>>('/password/forgot', { phone: payload.phone });
+    const { data } = await api.post<ApiResponse<string | null>>('/password/forgot', body);
     return data.message;
   } catch (error) {
     throw toAppError(error);

@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { ForgotPasswordScreen } from '@/screens/public-routes/forgot-password/screens/ForgotPasswordScreen';
 import { LoginScreen } from '@/screens/public-routes/login/screens/LoginScreen';
+import { RegisterCodeScreen } from '@/screens/public-routes/register/screens/RegisterCodeScreen';
 import { RegisterScreen } from '@/screens/public-routes/register/screens/RegisterScreen';
 import { ResetPasswordScreen } from '@/screens/public-routes/reset-password/screens/ResetPasswordScreen';
 
@@ -14,6 +15,7 @@ export function PublicStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="login" component={LoginScreen} />
       <Stack.Screen name="register" component={RegisterScreen} />
+      <Stack.Screen name="registerCode" component={RegisterCodeScreen} />
       <Stack.Screen name="forgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="resetPassword" component={ResetPasswordScreen} />
     </Stack.Navigator>
