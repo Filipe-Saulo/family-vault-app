@@ -1,23 +1,26 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useForm } from 'react-hook-form';
-import { Alert } from 'react-native';
 
+import type { PublicRoutes } from '@/navigation/public-routes/publicRoutes';
+import type { VerificationMethod } from '@/schemas/services/account/contact-issues';
 import {
   registerRequestSchema,
   type RegisterRequestSchema,
 } from '@/schemas/services/account/register-request-schema';
-import { useRegister } from '@/services/account/register-service';
+import { useRegisterCode } from '@/services/account/register-service';
 
 import { RegisterForm } from '../components/RegisterForm';
 
 export function RegisterContainer() {
-  const navigation = useNavigation();
-  const { mutate, isPending, error } = useRegister();
+  const navigation = useNavigation<NativeStackNavigationProp<PublicRoutes>>();
+  const { mutate, isPending, error } = useRegisterCode();
 
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<RegisterRequestSchema>({
     resolver: zodResolver(registerRequestSchema),
@@ -25,23 +28,32 @@ export function RegisterContainer() {
       firstName: '',
       lastName: '',
       age: undefined,
+      method: 'sms',
       phoneNumber: '',
+      email: '',
       password: '',
       passwordConfirm: '',
     },
   });
 
+  const onMethodChange = (method: VerificationMethod) => {
+    setValue('method', method);
+  };
+
   const onSubmit = handleSubmit((values) => {
     mutate(values, {
-      onSuccess: (message) => {
-        Alert.alert('Conta criada', message ?? 'Cadastro realizado com sucesso. Faça login para continuar.', [
-          { text: 'OK', onPress: () => navigation.navigate('login' as never) },
-        ]);
-      },
+      onSuccess: () => navigation.navigate('registerCode', { form: values, sentAt: Date.now() }),
     });
   });
 
   return (
-    <RegisterForm control={control} errors={errors} isSubmitting={isPending} onSubmit={onSubmit} apiError={error} />
+    <RegisterForm
+      control={control}
+      errors={errors}
+      isSubmitting={isPending}
+      onSubmit={onSubmit}
+      onMethodChange={onMethodChange}
+      apiError={error}
+    />
   );
 }

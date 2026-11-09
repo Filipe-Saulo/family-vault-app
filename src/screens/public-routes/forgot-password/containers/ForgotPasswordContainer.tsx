@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useForm } from 'react-hook-form';
 
 import type { PublicRoutes } from '@/navigation/public-routes/publicRoutes';
+import type { VerificationMethod } from '@/schemas/services/account/contact-issues';
 import {
   forgotPasswordRequestSchema,
   type ForgotPasswordRequestSchema,
@@ -19,19 +20,32 @@ export function ForgotPasswordContainer() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ForgotPasswordRequestSchema>({
     resolver: zodResolver(forgotPasswordRequestSchema),
-    defaultValues: { phone: '' },
+    defaultValues: { method: 'sms', phone: '', email: '' },
   });
 
+  const onMethodChange = (method: VerificationMethod) => {
+    setValue('method', method);
+  };
+
   const onSubmit = handleSubmit((values) => {
+    const destination = values.method === 'email' ? { email: values.email } : { phone: values.phone };
     mutate(values, {
-      onSuccess: () => navigation.navigate('resetPassword', { phone: values.phone }),
+      onSuccess: () => navigation.navigate('resetPassword', { ...destination, sentAt: Date.now() }),
     });
   });
 
   return (
-    <ForgotPasswordForm control={control} errors={errors} isSubmitting={isPending} onSubmit={onSubmit} apiError={error} />
+    <ForgotPasswordForm
+      control={control}
+      errors={errors}
+      isSubmitting={isPending}
+      onSubmit={onSubmit}
+      onMethodChange={onMethodChange}
+      apiError={error}
+    />
   );
 }

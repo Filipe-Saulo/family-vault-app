@@ -1,15 +1,13 @@
 import { z } from 'zod';
 
-const PHONE_FORMAT_REGEX = /^[\d+()\-\s]+$/;
+import { addContactIssues, verificationMethodSchema } from './contact-issues';
 
-export const forgotPasswordRequestSchema = z.object({
-  phone: z
-    .string()
-    .min(1, 'Telefone é obrigatório.')
-    .refine(
-      (value) => value.length >= 8 && value.length <= 17 && PHONE_FORMAT_REGEX.test(value),
-      'Telefone inválido.'
-    ),
-});
+export const forgotPasswordRequestSchema = z
+  .object({
+    method: verificationMethodSchema,
+    email: z.string().optional(),
+    phone: z.string().optional(),
+  })
+  .superRefine((data, ctx) => addContactIssues(data, 'phone', ctx));
 
 export type ForgotPasswordRequestSchema = z.infer<typeof forgotPasswordRequestSchema>;

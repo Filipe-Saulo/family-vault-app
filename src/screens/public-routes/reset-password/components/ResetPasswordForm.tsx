@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
+import { formatResendLabel } from '@/lib/resend-countdown';
 import type { ResetPasswordRequestSchema } from '@/schemas/services/account/reset-password-request-schema';
 
 interface ResetPasswordFormProps {
@@ -14,6 +15,7 @@ interface ResetPasswordFormProps {
   onSubmit: () => void;
   onResend: () => void;
   isResending: boolean;
+  resendRemaining: number;
   resendMessage?: string | null;
   apiError?: Error | null;
 }
@@ -25,6 +27,7 @@ export function ResetPasswordForm({
   onSubmit,
   onResend,
   isResending,
+  resendRemaining,
   resendMessage,
   apiError,
 }: ResetPasswordFormProps) {
@@ -82,8 +85,8 @@ export function ResetPasswordForm({
         <Text>{isSubmitting ? 'Redefinindo...' : 'Redefinir senha'}</Text>
       </Button>
 
-      <Button variant="outline" onPress={onResend} disabled={isResending}>
-        <Text>{isResending ? 'Reenviando...' : 'Reenviar código'}</Text>
+      <Button variant="outline" onPress={onResend} disabled={isResending || resendRemaining > 0}>
+        <Text>{isResending ? 'Reenviando...' : formatResendLabel(resendRemaining)}</Text>
       </Button>
     </View>
   );

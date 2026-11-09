@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
+import { verificationCodeSchema } from './contact-issues';
 import { passwordSchema } from './password-schema';
 
-// The phone comes from the previous step (route param), not from a form field.
+// The phone/e-mail comes from the previous step (route param), not from a form field.
 export const resetPasswordRequestSchema = z
   .object({
-    code: z.string().regex(/^\d{6}$/, 'O código deve ter 6 dígitos.'),
+    code: verificationCodeSchema,
     password: passwordSchema,
     passwordConfirm: z.string().min(1, 'Confirmação de senha é obrigatória.'),
   })
