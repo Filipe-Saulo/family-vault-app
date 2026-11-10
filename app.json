@@ -27,7 +27,15 @@
     "plugins": [
       "expo-dev-client",
       "@react-native-community/datetimepicker",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Family Vault usa suas fotos para ler contas a pagar que você escolher.",
+          "cameraPermission": "O Family Vault usa a câmera para fotografar contas a pagar.",
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

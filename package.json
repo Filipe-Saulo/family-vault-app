@@ -21,6 +21,8 @@
     "clsx": "^2.1.1",
     "expo": "~57.0.15",
     "expo-dev-client": "~57.0.14",
+    "expo-document-picker": "~57.0.3",
+    "expo-image-picker": "~57.0.21",
     "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "jwt-decode": "^4.0.0",
