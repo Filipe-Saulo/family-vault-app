@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { CategoriesStack } from './categories-stack/CategoriesStack';
+import { ChargesStack } from './charges-stack/ChargesStack';
 import { HomeStack } from './home-stack/HomeStack';
 import type { PrivateRoutes } from './privateRoutes';
 import { ProfileStack } from './profile-stack/ProfileStack';
@@ -28,6 +29,14 @@ export function PrivateTabs() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="swap-horizontal-outline" color={color} size={size} />
           ),
+        }}
+      />
+      <Tab.Screen
+        name="chargesStack"
+        component={ChargesStack}
+        options={{
+          title: 'Contas',
+          tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" color={color} size={size} />,
         }}
       />
       <Tab.Screen
