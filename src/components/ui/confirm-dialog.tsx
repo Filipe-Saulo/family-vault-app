@@ -25,6 +25,10 @@ interface ConfirmDialogProps {
   errorMessage?: string | null;
   /** Called when the dialog opens, e.g. to reset a previous failed mutation. */
   onOpen?: () => void;
+  /** Button text while `isConfirming`. */
+  confirmingLabel?: string;
+  /** Extra content between the description and the error, e.g. an option. */
+  children?: ReactNode;
 }
 
 export function ConfirmDialog({
@@ -38,6 +42,8 @@ export function ConfirmDialog({
   isConfirming,
   errorMessage,
   onOpen,
+  confirmingLabel = 'Excluindo...',
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog
@@ -52,10 +58,11 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children}
         {errorMessage && <Text className="text-center text-sm text-error">{errorMessage}</Text>}
         <DialogFooter>
           <Button variant="destructive" onPress={onConfirm} disabled={isConfirming}>
-            <Text>{isConfirming ? 'Excluindo...' : confirmLabel}</Text>
+            <Text>{isConfirming ? confirmingLabel : confirmLabel}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>
