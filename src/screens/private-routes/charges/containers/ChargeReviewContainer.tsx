@@ -3,8 +3,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { View } from 'react-native';
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   confirmChargeRequestSchema,
   type ConfirmChargeRequestSchema,
@@ -25,6 +28,8 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [isDismissOpen, setIsDismissOpen] = useState(false);
+  const [ignoreSender, setIgnoreSender] = useState(false);
+  const isFromGmail = charge.source === 'Gmail';
 
   const { data: categoriesLookup } = useCategoriesLookup();
   // Confirming creates an expense, so only expense categories are valid.
@@ -95,14 +100,18 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
   });
 
   const onDismiss = () => {
-    dismissCharge(charge.chargeId, {
-      onSuccess: () => {
-        setIsDismissOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['charges'] });
-        navigation.goBack();
-      },
-      onError: refreshCharges,
-    });
+    dismissCharge(
+      { chargeId: charge.chargeId, ignoreSender: isFromGmail && ignoreSender },
+      {
+        onSuccess: () => {
+          setIsDismissOpen(false);
+          queryClient.invalidateQueries({ queryKey: ['charges'] });
+          if (isFromGmail && ignoreSender) queryClient.invalidateQueries({ queryKey: ['gmail', 'ignored-senders'] });
+          navigation.goBack();
+        },
+        onError: refreshCharges,
+      }
+    );
   };
 
   return (
@@ -126,9 +135,26 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
         confirmLabel="Descartar"
         isConfirming={isDismissing}
         errorMessage={dismissError?.message}
-        onOpen={resetDismiss}
-        onConfirm={onDismiss}
-      />
+        confirmingLabel="Descartando..."
+        onOpen={() => {
+          resetDismiss();
+          setIgnoreSender(false);
+        }}
+        onConfirm={onDismiss}>
+        {isFromGmail && (
+          <View className="flex-row items-center justify-between gap-3">
+            <Label nativeID="ignore-sender" className="flex-1">
+              Ignorar este remetente nas próximas verificações do Gmail
+            </Label>
+            <Switch
+              checked={ignoreSender}
+              onCheckedChange={setIgnoreSender}
+              disabled={isDismissing}
+              aria-labelledby="ignore-sender"
+            />
+          </View>
+        )}
+      </ConfirmDialog>
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Text } from '@/components/ui/text';
 import type { ChargesStackRoutes } from '@/navigation/private-routes/charges-stack/chargesRoutes';
 import { useChargeFailures } from '@/services/charge/list-charge-failures-service';
@@ -13,7 +14,9 @@ import type { Charge } from '@/types/entities/charge';
 import { ChargeFailureList } from '../components/ChargeFailureList';
 import { ChargeList } from '../components/ChargeList';
 import { ChargeUploadPanel } from '../components/ChargeUploadPanel';
+import { GmailPanel } from '../components/GmailPanel';
 import { useChargeUpload } from './use-charge-upload';
+import { useGmail } from './use-gmail';
 
 const PAGE_SIZE = 20;
 
@@ -36,6 +39,7 @@ export function ChargesContainer() {
   const navigation = useNavigation<NativeStackNavigationProp<ChargesStackRoutes>>();
   const [view, setView] = useState<ChargesView>('pending');
   const upload = useChargeUpload();
+  const gmail = useGmail();
 
   const pending = useCharges({ status: 'PendingReview', pageSize: PAGE_SIZE });
   const failures = useChargeFailures({ pageSize: PAGE_SIZE });
@@ -77,6 +81,48 @@ export function ChargesContainer() {
 
   return (
     <View className="flex-1">
+      <GmailPanel
+        status={gmail.status.data}
+        isStatusLoading={gmail.status.isLoading}
+        statusErrorMessage={gmail.status.isError && !gmail.status.data ? gmail.status.error.message : null}
+        onRetryStatus={() => gmail.status.refetch()}
+        onConnect={gmail.connect}
+        isConnecting={gmail.isConnecting}
+        connectErrorMessage={gmail.connectErrorMessage}
+        onStartScan={gmail.startScan}
+        isStartingScan={gmail.isStartingScan}
+        startScanErrorMessage={gmail.startScanErrorMessage}
+        scan={gmail.scan?.data}
+        isTrackingScan={gmail.scan !== null}
+        isScanning={gmail.isScanning}
+        scanTimedOut={gmail.scanTimedOut}
+        initialScanTimedOut={gmail.initialScanTimedOut}
+        scanErrorMessage={gmail.scan?.isError ? gmail.scan.error.message : null}
+        onRetryScan={() => gmail.scan?.refetch()}
+        onClearScan={gmail.clearScan}
+        onDisconnect={() => gmail.setIsDisconnectOpen(true)}
+        showIgnoredSenders={gmail.showIgnoredSenders}
+        onToggleIgnoredSenders={gmail.toggleIgnoredSenders}
+        ignoredSenders={gmail.ignoredSenders.data}
+        isIgnoredSendersLoading={gmail.ignoredSenders.isLoading}
+        ignoredSendersErrorMessage={gmail.ignoredSenders.isError ? gmail.ignoredSenders.error.message : null}
+        onRetryIgnoredSenders={() => gmail.ignoredSenders.refetch()}
+        onRemoveIgnoredSender={gmail.removeIgnoredSender}
+        removingIgnoredSenderId={gmail.removingIgnoredSenderId}
+        removeIgnoredSenderErrorMessage={gmail.removeIgnoredSenderErrorMessage}
+      />
+      <ConfirmDialog
+        open={gmail.isDisconnectOpen}
+        onOpenChange={gmail.setIsDisconnectOpen}
+        title="Desconectar o Gmail"
+        description="O app deixa de ler seus e-mails e o acesso é revogado no Google. As contas para revisar continuam; os e-mails ainda não lidos são descartados."
+        confirmLabel="Desconectar"
+        confirmingLabel="Desconectando..."
+        isConfirming={gmail.isDisconnecting}
+        errorMessage={gmail.disconnectErrorMessage}
+        onOpen={gmail.resetDisconnect}
+        onConfirm={gmail.confirmDisconnect}
+      />
       <ChargeUploadPanel
         onPick={upload.start}
         onClear={upload.clear}
