@@ -20,6 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "~57.0.15",
+    "expo-clipboard": "~57.0.2",
     "expo-dev-client": "~57.0.14",
     "expo-document-picker": "~57.0.3",
     "expo-image-picker": "~57.0.21",
