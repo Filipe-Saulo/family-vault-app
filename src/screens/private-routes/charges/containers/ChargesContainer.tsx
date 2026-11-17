@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -9,7 +9,7 @@ import { Text } from '@/components/ui/text';
 import type { ChargesStackRoutes } from '@/navigation/private-routes/charges-stack/chargesRoutes';
 import { useChargeFailures } from '@/services/charge/list-charge-failures-service';
 import { useCharges } from '@/services/charge/list-charges-service';
-import type { Charge } from '@/types/entities/charge';
+import type { Charge, ChargeFailure } from '@/types/entities/charge';
 
 import { ChargeFailureList } from '../components/ChargeFailureList';
 import { ChargeList } from '../components/ChargeList';
@@ -37,6 +37,8 @@ function useRefreshing(refetch: () => Promise<unknown>) {
 
 export function ChargesContainer() {
   const navigation = useNavigation<NativeStackNavigationProp<ChargesStackRoutes>>();
+  const route = useRoute<RouteProp<ChargesStackRoutes, 'charges'>>();
+  const notice = route.params?.notice;
   const [view, setView] = useState<ChargesView>('pending');
   const upload = useChargeUpload();
   const gmail = useGmail();
@@ -53,6 +55,20 @@ export function ChargesContainer() {
   const handleReview = useCallback(
     (charge: Charge) => {
       navigation.navigate('chargeReview', { charge });
+    },
+    [navigation]
+  );
+
+  const handleInformPassword = useCallback(
+    (failure: ChargeFailure) => {
+      navigation.navigate('chargePassword', { failure });
+    },
+    [navigation]
+  );
+
+  const handleInformAmount = useCallback(
+    (failure: ChargeFailure) => {
+      navigation.navigate('chargeManual', { failure });
     },
     [navigation]
   );
@@ -136,6 +152,20 @@ export function ChargesContainer() {
         timedOut={upload.timedOut}
       />
 
+      {notice && (
+        <View className="mb-4 flex-row items-center gap-2">
+          <Text className="flex-1 text-sm">{notice}</Text>
+          <Button
+            variant="ghost"
+            size="sm"
+            accessibilityRole="button"
+            accessibilityLabel="Fechar aviso"
+            onPress={() => navigation.setParams({ notice: undefined })}>
+            <Text>Ok</Text>
+          </Button>
+        </View>
+      )}
+
       <View className="mb-4 flex-row gap-2">
         <Button
           className="flex-1"
@@ -181,6 +211,8 @@ export function ChargesContainer() {
           onRetryNextPage={() => failures.fetchNextPage()}
           isResending={upload.isUploading}
           onResend={handleResend}
+          onInformPassword={handleInformPassword}
+          onInformAmount={handleInformAmount}
         />
       )}
     </View>
