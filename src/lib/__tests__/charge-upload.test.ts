@@ -14,6 +14,8 @@ function makeCharge(overrides: Partial<Charge>): Charge {
     barcode: null,
     suggestedCategoryId: null,
     possibleDuplicateTransactionId: null,
+    extractionSource: 'Document',
+    possibleDuplicateChargeId: null,
     status: 'PendingReview',
     transactionId: null,
     createdAt: '2026-11-10T12:00:00',
@@ -28,6 +30,8 @@ function makeFailure(overrides: Partial<ChargeFailure>): ChargeFailure {
     sender: null,
     receivedAt: '2026-11-10T12:00:00',
     failureReason: 'O PDF está protegido por senha.',
+    status: 'Failed',
+    passwordAttemptsRemaining: null,
     ...overrides,
   };
 }

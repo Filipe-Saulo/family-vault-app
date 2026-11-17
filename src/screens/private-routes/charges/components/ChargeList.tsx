@@ -5,6 +5,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { DUPLICATE_CHARGE_WARNING, EMAIL_BODY_LABEL } from '@/lib/charge-upload-failure';
 import { formatCurrency } from '@/lib/format';
 import { formatDateOnlyBR } from '@/lib/month-range';
 import type { Charge } from '@/types/entities/charge';
@@ -40,6 +41,14 @@ const ChargeRow = memo(function ChargeRow({ charge, onReview }: ChargeRowProps) 
         </View>
         {charge.possibleDuplicateTransactionId != null && (
           <Text className="text-xs text-amber-600 dark:text-amber-400">{DUPLICATE_WARNING}</Text>
+        )}
+        {charge.possibleDuplicateChargeId != null && (
+          <Text className="text-xs text-amber-600 dark:text-amber-400">{DUPLICATE_CHARGE_WARNING}</Text>
+        )}
+        {charge.extractionSource === 'EmailBody' && (
+          <Text variant="muted" className="text-xs">
+            {EMAIL_BODY_LABEL}
+          </Text>
         )}
         <Button
           variant="outline"

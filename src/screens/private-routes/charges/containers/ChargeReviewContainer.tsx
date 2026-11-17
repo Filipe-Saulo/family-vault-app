@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -8,6 +9,7 @@ import { View } from 'react-native';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import type { ChargesStackRoutes } from '@/navigation/private-routes/charges-stack/chargesRoutes';
 import {
   confirmChargeRequestSchema,
   type ConfirmChargeRequestSchema,
@@ -25,7 +27,7 @@ interface ChargeReviewContainerProps {
 }
 
 export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<ChargesStackRoutes>>();
   const queryClient = useQueryClient();
   const [isDismissOpen, setIsDismissOpen] = useState(false);
   const [ignoreSender, setIgnoreSender] = useState(false);
@@ -123,6 +125,7 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
         categories={categories}
         onConfirm={onConfirm}
         onDismiss={() => setIsDismissOpen(true)}
+        onOpenDuplicate={(other) => navigation.replace('chargeReview', { charge: other })}
         isConfirming={isConfirming}
         canSubmit={canSubmit && !isDismissing}
         apiError={confirmError}
