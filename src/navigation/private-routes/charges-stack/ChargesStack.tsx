@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { ChargeManualScreen } from '@/screens/private-routes/charges/screens/ChargeManualScreen';
+import { ChargePasswordScreen } from '@/screens/private-routes/charges/screens/ChargePasswordScreen';
 import { ChargeReviewScreen } from '@/screens/private-routes/charges/screens/ChargeReviewScreen';
 import { ChargesScreen } from '@/screens/private-routes/charges/screens/ChargesScreen';
 
@@ -12,6 +14,8 @@ export function ChargesStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="charges" component={ChargesScreen} />
       <Stack.Screen name="chargeReview" component={ChargeReviewScreen} />
+      <Stack.Screen name="chargePassword" component={ChargePasswordScreen} />
+      <Stack.Screen name="chargeManual" component={ChargeManualScreen} />
     </Stack.Navigator>
   );
 }

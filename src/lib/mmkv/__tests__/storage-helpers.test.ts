@@ -11,7 +11,7 @@ describe('storage-helpers', () => {
 
     // let the pending async delete settle
     await Promise.resolve();
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise<void>((resolve) => setImmediate(resolve));
 
     expect(SecureStore.deleteItemAsync).toHaveBeenCalled();
     expect(getRefreshToken()).toBe('new-refresh');
@@ -21,7 +21,7 @@ describe('storage-helpers', () => {
     setTokens('access', 'refresh');
 
     clearAuthData();
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise<void>((resolve) => setImmediate(resolve));
 
     expect(getRefreshToken()).toBeNull();
   });

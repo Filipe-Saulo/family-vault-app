@@ -8,12 +8,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
+import { DUPLICATE_CHARGE_WARNING, EMAIL_BODY_WARNING } from '@/lib/charge-upload-failure';
 import { formatCurrency } from '@/lib/format';
 import type { ConfirmChargeRequestSchema } from '@/schemas/services/charge/confirm-charge-request-schema';
+import { useCharge } from '@/services/charge/get-charge-service';
 import type { Category } from '@/types/entities/category';
 import type { Charge } from '@/types/entities/charge';
 
 import { DUPLICATE_WARNING } from './ChargeList';
+
+interface DuplicateChargeNoticeProps {
+  chargeId: number;
+  onOpen: (charge: Charge) => void;
+}
+
+// Only offers the button while the other charge is still waiting for review.
+function DuplicateChargeNotice({ chargeId, onOpen }: DuplicateChargeNoticeProps) {
+  const { data: other } = useCharge(chargeId);
+
+  return (
+    <Card className="border-amber-500">
+      <CardContent className="gap-2">
+        <Text className="text-sm text-amber-600 dark:text-amber-400">{DUPLICATE_CHARGE_WARNING}</Text>
+        {other?.status === 'PendingReview' && (
+          <Button
+            variant="outline"
+            size="sm"
+            accessibilityRole="button"
+            accessibilityLabel="Abrir a outra conta em revisão"
+            onPress={() => onOpen(other)}>
+            <Text>Abrir a outra conta</Text>
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 interface ChargeReviewFormProps {
   charge: Charge;
@@ -22,6 +52,7 @@ interface ChargeReviewFormProps {
   categories: Category[];
   onConfirm: () => void;
   onDismiss: () => void;
+  onOpenDuplicate: (charge: Charge) => void;
   isConfirming: boolean;
   canSubmit: boolean;
   apiError?: Error | null;
@@ -34,12 +65,25 @@ export function ChargeReviewForm({
   categories,
   onConfirm,
   onDismiss,
+  onOpenDuplicate,
   isConfirming,
   canSubmit,
   apiError,
 }: ChargeReviewFormProps) {
   return (
     <ScrollView contentContainerClassName="gap-4 pb-8" keyboardShouldPersistTaps="handled">
+      {charge.extractionSource === 'EmailBody' && (
+        <Card className="border-amber-500">
+          <CardContent>
+            <Text className="text-sm text-amber-600 dark:text-amber-400">{EMAIL_BODY_WARNING}</Text>
+          </CardContent>
+        </Card>
+      )}
+
+      {charge.possibleDuplicateChargeId != null && (
+        <DuplicateChargeNotice chargeId={charge.possibleDuplicateChargeId} onOpen={onOpenDuplicate} />
+      )}
+
       {charge.possibleDuplicateTransactionId != null && (
         <Card className="border-amber-500">
           <CardContent>
