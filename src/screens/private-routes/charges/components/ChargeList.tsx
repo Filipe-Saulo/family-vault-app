@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, type ReactElement } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 
 import { ErrorState } from '@/components/ErrorState';
@@ -64,6 +64,8 @@ const ChargeRow = memo(function ChargeRow({ charge, onReview }: ChargeRowProps) 
 });
 
 interface ChargeListProps {
+  /** Scrolls together with the list (the panels above it), so the list never shrinks to a strip. */
+  header?: ReactElement;
   charges: Charge[];
   isLoading: boolean;
   errorMessage: string | null;
@@ -80,6 +82,7 @@ interface ChargeListProps {
 const keyExtractor = (item: Charge) => String(item.chargeId);
 
 export function ChargeList({
+  header,
   charges,
   isLoading,
   errorMessage,
@@ -97,21 +100,23 @@ export function ChargeList({
     [onReview]
   );
 
-  if (isLoading) {
-    return (
-      <View className="items-center justify-center py-8">
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
-  if (errorMessage) {
-    return <ErrorState message={errorMessage} onRetry={onRetry} />;
-  }
+  // Loading and a failed first load show in place of the items, below the header.
+  const isBlocked = isLoading || !!errorMessage;
+  const emptyContent = isLoading ? (
+    <View className="items-center justify-center py-8">
+      <ActivityIndicator />
+    </View>
+  ) : errorMessage ? (
+    <ErrorState message={errorMessage} onRetry={onRetry} />
+  ) : (
+    <Text variant="muted" className="mt-8 text-center">
+      Nenhuma conta para revisar.
+    </Text>
+  );
 
   return (
     <FlatList
-      data={charges}
+      data={isBlocked ? [] : charges}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       contentContainerClassName="gap-3 pb-4"
@@ -119,11 +124,8 @@ export function ChargeList({
       onRefresh={onRefresh}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
-      ListEmptyComponent={
-        <Text variant="muted" className="mt-8 text-center">
-          Nenhuma conta para revisar.
-        </Text>
-      }
+      ListHeaderComponent={header}
+      ListEmptyComponent={emptyContent}
       ListFooterComponent={
         nextPageErrorMessage ? (
           <ErrorState message={nextPageErrorMessage} onRetry={onRetryNextPage} />
