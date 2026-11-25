@@ -47,6 +47,10 @@ export function ProfileContainer() {
         <Text>Trocar senha</Text>
       </Button>
 
+      <Button variant="outline" onPress={() => navigation.navigate('mcpTokens')}>
+        <Text>Tokens do MCP</Text>
+      </Button>
+
       <ThemeToggle />
 
       <ConfirmDialog

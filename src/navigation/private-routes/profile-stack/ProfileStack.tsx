@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { ChangePasswordScreen } from '@/screens/private-routes/profile/screens/ChangePasswordScreen';
+import { McpTokensScreen } from '@/screens/private-routes/profile/screens/McpTokensScreen';
 import { ProfileEditScreen } from '@/screens/private-routes/profile/screens/ProfileEditScreen';
 import { ProfileScreen } from '@/screens/private-routes/profile/screens/ProfileScreen';
 
@@ -14,6 +15,7 @@ export function ProfileStack() {
       <Stack.Screen name="profile" component={ProfileScreen} />
       <Stack.Screen name="profileEdit" component={ProfileEditScreen} />
       <Stack.Screen name="changePassword" component={ChangePasswordScreen} />
+      <Stack.Screen name="mcpTokens" component={McpTokensScreen} />
     </Stack.Navigator>
   );
 }
