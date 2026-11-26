@@ -41,6 +41,16 @@ export function ChargesContainer() {
   const notice = route.params?.notice;
   const [view, setView] = useState<ChargesView>('pending');
   const upload = useChargeUpload();
+
+  // Coming back with a notice (bill confirmed, dismissed, password accepted) shows "Para revisar", even when the
+  // bill was opened from the upload panel with "Falharam" open. Depends on the params object, not on the text, so
+  // the same notice twice in a row also switches.
+  const params = route.params;
+  const [seenParams, setSeenParams] = useState(params);
+  if (params !== seenParams) {
+    setSeenParams(params);
+    if (params?.notice) setView('pending');
+  }
   const gmail = useGmail();
 
   const pending = useCharges({ status: 'PendingReview', pageSize: PAGE_SIZE });
@@ -95,8 +105,10 @@ export function ChargesContainer() {
   const failuresHasData = !!failures.data;
   const failuresCount = failures.data?.pages[0]?.totalCount ?? 0;
 
-  return (
-    <View className="flex-1">
+  // Everything above the list scrolls with it: with the Gmail and upload messages open, a fixed header left the
+  // list a strip of the screen.
+  const header = (
+    <View>
       <GmailPanel
         status={gmail.status.data}
         isStatusLoading={gmail.status.isLoading}
@@ -126,18 +138,6 @@ export function ChargesContainer() {
         onRemoveIgnoredSender={gmail.removeIgnoredSender}
         removingIgnoredSenderId={gmail.removingIgnoredSenderId}
         removeIgnoredSenderErrorMessage={gmail.removeIgnoredSenderErrorMessage}
-      />
-      <ConfirmDialog
-        open={gmail.isDisconnectOpen}
-        onOpenChange={gmail.setIsDisconnectOpen}
-        title="Desconectar o Gmail"
-        description="O app deixa de ler seus e-mails e o acesso é revogado no Google. As contas para revisar continuam; os e-mails ainda não lidos são descartados."
-        confirmLabel="Desconectar"
-        confirmingLabel="Desconectando..."
-        isConfirming={gmail.isDisconnecting}
-        errorMessage={gmail.disconnectErrorMessage}
-        onOpen={gmail.resetDisconnect}
-        onConfirm={gmail.confirmDisconnect}
       />
       <ChargeUploadPanel
         onPick={upload.start}
@@ -182,9 +182,26 @@ export function ChargesContainer() {
           <Text>{failuresCount > 0 ? `Falharam (${failuresCount})` : 'Falharam'}</Text>
         </Button>
       </View>
+    </View>
+  );
 
+  return (
+    <View className="flex-1">
+      <ConfirmDialog
+        open={gmail.isDisconnectOpen}
+        onOpenChange={gmail.setIsDisconnectOpen}
+        title="Desconectar o Gmail"
+        description="O app deixa de ler seus e-mails e o acesso é revogado no Google. As contas para revisar continuam; os e-mails ainda não lidos são descartados."
+        confirmLabel="Desconectar"
+        confirmingLabel="Desconectando..."
+        isConfirming={gmail.isDisconnecting}
+        errorMessage={gmail.disconnectErrorMessage}
+        onOpen={gmail.resetDisconnect}
+        onConfirm={gmail.confirmDisconnect}
+      />
       {view === 'pending' ? (
         <ChargeList
+          header={header}
           charges={charges}
           isLoading={pending.isLoading}
           errorMessage={pending.isError && !pendingHasData ? pending.error.message : null}
@@ -199,6 +216,7 @@ export function ChargesContainer() {
         />
       ) : (
         <ChargeFailureList
+          header={header}
           failures={failureItems}
           isLoading={failures.isLoading}
           errorMessage={failures.isError && !failuresHasData ? failures.error.message : null}

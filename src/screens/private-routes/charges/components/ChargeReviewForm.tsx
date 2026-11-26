@@ -1,13 +1,18 @@
+import * as Clipboard from 'expo-clipboard';
+import { Check, Copy } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { ScrollView, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DateField } from '@/components/ui/date-field';
+import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
+import { formatBarcode, onlyDigits } from '@/lib/barcode';
 import { DUPLICATE_CHARGE_WARNING, EMAIL_BODY_WARNING } from '@/lib/charge-upload-failure';
 import { formatCurrency } from '@/lib/format';
 import type { ConfirmChargeRequestSchema } from '@/schemas/services/charge/confirm-charge-request-schema';
@@ -42,6 +47,45 @@ function DuplicateChargeNotice({ chargeId, onOpen }: DuplicateChargeNoticeProps)
         )}
       </CardContent>
     </Card>
+  );
+}
+
+const COPIED_FEEDBACK_MS = 2000;
+
+// The line is shown grouped as printed on the slip, and copied as digits only, which is what banking apps accept.
+function BarcodeField({ barcode }: { barcode: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(onlyDigits(barcode) || barcode.trim());
+    setCopied(true);
+  };
+
+  return (
+    <View className="gap-1.5">
+      <Text variant="muted" className="text-sm">
+        Linha digitável
+      </Text>
+      <Text className="font-mono text-sm leading-6" selectable>
+        {formatBarcode(barcode)}
+      </Text>
+      <Button
+        variant="outline"
+        size="sm"
+        className="self-start"
+        accessibilityRole="button"
+        accessibilityLabel="Copiar linha digitável"
+        onPress={handleCopy}>
+        <Icon as={copied ? Check : Copy} />
+        <Text>{copied ? 'Copiada' : 'Copiar'}</Text>
+      </Button>
+    </View>
   );
 }
 
@@ -92,20 +136,13 @@ export function ChargeReviewForm({
         </Card>
       )}
 
-      {(charge.issuer || charge.barcode) && (
-        <View className="gap-1">
-          {charge.issuer && (
-            <Text variant="muted" className="text-sm">
-              Emissor: {charge.issuer}
-            </Text>
-          )}
-          {charge.barcode && (
-            <Text variant="muted" className="text-sm" selectable>
-              Linha digitável: {charge.barcode}
-            </Text>
-          )}
-        </View>
+      {charge.issuer && (
+        <Text variant="muted" className="text-sm">
+          Emissor: {charge.issuer}
+        </Text>
       )}
+
+      {charge.barcode && <BarcodeField barcode={charge.barcode} />}
 
       {apiError && <Text className="text-center text-sm text-error">{apiError.message}</Text>}
 

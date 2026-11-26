@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, type ReactElement } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 
 import { ErrorState } from '@/components/ErrorState';
@@ -94,6 +94,8 @@ const ChargeFailureRow = memo(function ChargeFailureRow({
 });
 
 interface ChargeFailureListProps {
+  /** Scrolls together with the list (the panels above it), so the list never shrinks to a strip. */
+  header?: ReactElement;
   failures: ChargeFailure[];
   isLoading: boolean;
   errorMessage: string | null;
@@ -113,6 +115,7 @@ interface ChargeFailureListProps {
 const keyExtractor = (item: ChargeFailure) => String(item.documentId);
 
 export function ChargeFailureList({
+  header,
   failures,
   isLoading,
   errorMessage,
@@ -141,21 +144,23 @@ export function ChargeFailureList({
     [isResending, onResend, onInformPassword, onInformAmount]
   );
 
-  if (isLoading) {
-    return (
-      <View className="items-center justify-center py-8">
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
-  if (errorMessage) {
-    return <ErrorState message={errorMessage} onRetry={onRetry} />;
-  }
+  // Loading and a failed first load show in place of the items, below the header.
+  const isBlocked = isLoading || !!errorMessage;
+  const emptyContent = isLoading ? (
+    <View className="items-center justify-center py-8">
+      <ActivityIndicator />
+    </View>
+  ) : errorMessage ? (
+    <ErrorState message={errorMessage} onRetry={onRetry} />
+  ) : (
+    <Text variant="muted" className="mt-8 text-center">
+      Nenhum documento com falha.
+    </Text>
+  );
 
   return (
     <FlatList
-      data={failures}
+      data={isBlocked ? [] : failures}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       contentContainerClassName="gap-3 pb-4"
@@ -163,11 +168,8 @@ export function ChargeFailureList({
       onRefresh={onRefresh}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
-      ListEmptyComponent={
-        <Text variant="muted" className="mt-8 text-center">
-          Nenhum documento com falha.
-        </Text>
-      }
+      ListHeaderComponent={header}
+      ListEmptyComponent={emptyContent}
       ListFooterComponent={
         nextPageErrorMessage ? (
           <ErrorState message={nextPageErrorMessage} onRetry={onRetryNextPage} />

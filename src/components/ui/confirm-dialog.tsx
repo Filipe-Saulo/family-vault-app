@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -29,6 +30,8 @@ interface ConfirmDialogProps {
   confirmingLabel?: string;
   /** Extra content between the description and the error, e.g. an option. */
   children?: ReactNode;
+  /** Shows a button that closes the dialog without confirming. */
+  cancelLabel?: string;
 }
 
 export function ConfirmDialog({
@@ -44,6 +47,7 @@ export function ConfirmDialog({
   onOpen,
   confirmingLabel = 'Excluindo...',
   children,
+  cancelLabel,
 }: ConfirmDialogProps) {
   return (
     <Dialog
@@ -61,6 +65,14 @@ export function ConfirmDialog({
         {children}
         {errorMessage && <Text className="text-center text-sm text-error">{errorMessage}</Text>}
         <DialogFooter>
+          {/* The footer is column-reverse on phones: the first button ends up at the bottom. */}
+          {cancelLabel && (
+            <DialogClose asChild>
+              <Button variant="outline" disabled={isConfirming}>
+                <Text>{cancelLabel}</Text>
+              </Button>
+            </DialogClose>
+          )}
           <Button variant="destructive" onPress={onConfirm} disabled={isConfirming}>
             <Text>{isConfirming ? confirmingLabel : confirmLabel}</Text>
           </Button>

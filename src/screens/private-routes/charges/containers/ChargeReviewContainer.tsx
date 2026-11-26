@@ -22,6 +22,9 @@ import { PurposeCode } from '@/types/enums/purpose-code';
 
 import { ChargeReviewForm } from '../components/ChargeReviewForm';
 
+export const CONFIRMED_NOTICE = 'Conta confirmada. A despesa foi criada em Transações.';
+export const DISMISSED_NOTICE = 'Conta descartada.';
+
 interface ChargeReviewContainerProps {
   charge: Charge;
 }
@@ -94,7 +97,7 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
           queryClient.invalidateQueries({ queryKey: ['charges'] });
           queryClient.invalidateQueries({ queryKey: ['transactions'] });
           queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
-          navigation.goBack();
+          navigation.popTo('charges', { notice: CONFIRMED_NOTICE });
         },
         onError: refreshCharges,
       }
@@ -109,7 +112,7 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
           setIsDismissOpen(false);
           queryClient.invalidateQueries({ queryKey: ['charges'] });
           if (isFromGmail && ignoreSender) queryClient.invalidateQueries({ queryKey: ['gmail', 'ignored-senders'] });
-          navigation.goBack();
+          navigation.popTo('charges', { notice: DISMISSED_NOTICE });
         },
         onError: refreshCharges,
       }
@@ -139,6 +142,7 @@ export function ChargeReviewContainer({ charge }: ChargeReviewContainerProps) {
         isConfirming={isDismissing}
         errorMessage={dismissError?.message}
         confirmingLabel="Descartando..."
+        cancelLabel="Cancelar"
         onOpen={() => {
           resetDismiss();
           setIgnoreSender(false);

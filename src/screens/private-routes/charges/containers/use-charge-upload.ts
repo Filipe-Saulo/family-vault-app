@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ACCEPTED_DOCUMENT_TYPES, prepareUploadFile, type PickedAsset } from '@/lib/charge-upload-file';
 import { useUploadStatus } from '@/services/charge/get-upload-status-service';
@@ -78,6 +78,16 @@ export function useChargeUpload() {
     setTimedOut(false);
     resetUpload();
   }, [resetUpload]);
+
+  // A bill that was "ready" and then turns up as handled was confirmed or dismissed by the user right after the
+  // upload (handling it refreshes every charges query, this status included). That is not a re-upload of a handled
+  // file, so the panel closes instead of saying "já foi enviado"; the list shows the confirmation notice.
+  const previousStatusKind = useRef(statusKind);
+  useEffect(() => {
+    const previous = previousStatusKind.current;
+    previousStatusKind.current = statusKind;
+    if (previous === 'ready' && statusKind === 'already-handled') clear();
+  }, [statusKind, clear]);
 
   const start = useCallback(
     async (source: UploadSource) => {
